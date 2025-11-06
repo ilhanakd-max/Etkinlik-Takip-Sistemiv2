@@ -223,6 +223,86 @@ function clear_output_buffers() {
     }
 }
 
+function normalize_payment_amount($value) {
+    if ($value === null) {
+        return null;
+    }
+
+    if (is_numeric($value)) {
+        return (float) $value;
+    }
+
+    $normalized = trim((string) $value);
+    if ($normalized === '' || $normalized === '0' || $normalized === '-0') {
+        return $normalized === '' ? null : 0.0;
+    }
+
+    $normalized = str_replace("\xc2\xa0", ' ', $normalized); // NBSP temizle
+    $normalized = str_replace(' ', '', $normalized);
+    $normalized = preg_replace('/[^\d,\.\-]/u', '', $normalized);
+    if ($normalized === '') {
+        return null;
+    }
+
+    if (strpos($normalized, ',') !== false && strpos($normalized, '.') !== false) {
+        $normalized = str_replace('.', '', $normalized);
+        $normalized = str_replace(',', '.', $normalized);
+    } else {
+        $normalized = str_replace(',', '.', $normalized);
+    }
+
+    if ($normalized === '' || $normalized === '.' || $normalized === '-.') {
+        return null;
+    }
+
+    return is_numeric($normalized) ? (float) $normalized : null;
+}
+
+function build_report_summary_text($data) {
+    global $all_event_statuses;
+
+    $total_events = count($data);
+    $status_counts = [];
+    $free_events = 0;
+    $paid_events = 0;
+
+    foreach ($data as $event) {
+        $event_status = $event['status'] ?? '';
+        $status_label = $all_event_statuses[$event_status]['display_name'] ?? $event_status;
+        $status_label = trim((string) $status_label);
+        if ($status_label === '') {
+            $status_label = 'Belirtilmedi';
+        }
+        if (!isset($status_counts[$status_label])) {
+            $status_counts[$status_label] = 0;
+        }
+        $status_counts[$status_label]++;
+
+        $payment_value = normalize_payment_amount($event['payment'] ?? null);
+        if ($payment_value !== null && $payment_value > 0) {
+            $paid_events++;
+        } else {
+            $free_events++;
+        }
+    }
+
+    $summary_parts = [];
+    foreach ($status_counts as $label => $count) {
+        $summary_parts[] = $count . ' ' . $label;
+    }
+    $summary_parts[] = $free_events . ' Ücretsiz';
+    $summary_parts[] = $paid_events . ' Ücretli';
+
+    $summary_text = 'Toplam ' . $total_events . ' etkinlik';
+    if (!empty($summary_parts)) {
+        $summary_text .= ': ' . implode(', ', $summary_parts) . '.';
+    } else {
+        $summary_text .= '.';
+    }
+
+    return $summary_text;
+}
+
 // TXT dosyası oluşturma fonksiyonu (GÜNCELLENDİ)
 function generateTXT($data, $title, $date_range, $filters) {
     global $all_event_statuses, $all_payment_statuses; // YENİ: Global durumları kullan
@@ -264,7 +344,8 @@ function generateTXT($data, $title, $date_range, $filters) {
         }
     }
 
-    $output .= "Toplam Etkinlik Sayısı: " . count($data) . "\r\n";
+    $summary_text = build_report_summary_text($data);
+    $output .= $summary_text . "\r\n";
     $output .= "Rapor Oluşturulma Tarihi: " . date('d.m.Y H:i:s') . "\r\n";
 
     echo $output;
@@ -392,7 +473,10 @@ function generateDOC($data, $title, $date_range, $filters) {
         $output .= '<td>' . $payment_text . '</td>';
         $output .= '</tr>';
     }
-    $output .= '</tbody></table>';
+    $summary_text = build_report_summary_text($data);
+    $output .= '</tbody>';
+    $output .= '<tfoot><tr><td colspan="7"><strong>' . htmlspecialchars($summary_text, ENT_QUOTES, 'UTF-8') . '</strong></td></tr></tfoot>';
+    $output .= '</table>';
     $output .= '<p><strong>Toplam Etkinlik:</strong> ' . count($data) . '</p>';
     $output .= '<p><strong>Rapor Oluşturulma Tarihi:</strong> ' . turkish_date('d M Y H:i:s') . '</p>';
     $output .= '</body></html>';
@@ -464,7 +548,10 @@ function generateXLS($data, $title, $date_range, $filters) {
         $output .= '<tr><td colspan="7" style="text-align:center;">Veri bulunamadı</td></tr>';
     }
 
-    $output .= '</tbody></table>';
+    $summary_text = build_report_summary_text($data);
+    $output .= '</tbody>';
+    $output .= '<tfoot><tr><td colspan="7"><strong>' . htmlspecialchars($summary_text, ENT_QUOTES, 'UTF-8') . '</strong></td></tr></tfoot>';
+    $output .= '</table>';
     $output .= '<p><strong>Toplam Etkinlik:</strong> ' . count($data) . '</p>';
     $output .= '<p><strong>Rapor Oluşturulma Tarihi:</strong> ' . htmlspecialchars(turkish_date('d M Y H:i:s'), ENT_QUOTES, 'UTF-8') . '</p>';
     $output .= '</body></html>';
