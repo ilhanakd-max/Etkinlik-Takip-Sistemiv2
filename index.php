@@ -394,6 +394,72 @@ function generateDOC($data, $title, $date_range, $filters) {
 }
 
 
+function generateXLS($data, $title, $date_range, $filters) {
+    global $all_event_statuses, $all_payment_statuses;
+    ob_clean();
+    header('Content-Type: application/vnd.ms-excel; charset=utf-8');
+    header('Content-Disposition: attachment; filename="etkinlik_raporu_' . date('Y-m-d') . '.xls"');
+    header('Cache-Control: max-age=0');
+
+    $output = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+    $output .= '<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">';
+    $output .= '<style>body{font-family:Calibri,Arial,sans-serif;font-size:12px;}';
+    $output .= 'h1{font-size:18px;text-align:center;margin-bottom:20px;}';
+    $output .= 'table{border-collapse:collapse;width:100%;}';
+    $output .= 'th,td{border:1px solid #000;padding:8px;text-align:left;white-space:nowrap;}';
+    $output .= 'th{background-color:#f2f2f2;font-weight:bold;}';
+    $output .= 'tr:nth-child(even){background-color:#f9f9f9;}';
+    $output .= '</style></head><body>';
+
+    $output .= '<h1>' . htmlspecialchars($title, ENT_QUOTES, 'UTF-8') . '</h1>';
+    $output .= '<p><strong>Tarih Aralığı:</strong> ' . htmlspecialchars($date_range, ENT_QUOTES, 'UTF-8') . '</p>';
+    if (!empty($filters)) {
+        $output .= '<p><strong>Filtreler:</strong> ' . htmlspecialchars($filters, ENT_QUOTES, 'UTF-8') . '</p>';
+    }
+
+    $output .= '<table>';
+    $output .= '<thead><tr>';
+    $headers = ['Tarih', 'Birim', 'Etkinlik Adı', 'Saat', 'İletişim', 'Durum', 'Ödeme'];
+    foreach ($headers as $header) {
+        $output .= '<th>' . htmlspecialchars($header, ENT_QUOTES, 'UTF-8') . '</th>';
+    }
+    $output .= '</tr></thead><tbody>';
+
+    if (!empty($data)) {
+        foreach ($data as $event) {
+            $event_status = $event['status'] ?? '';
+            $status_text = $all_event_statuses[$event_status]['display_name'] ?? $event_status;
+
+            $payment_text = '-';
+            $event_payment_status = $event['payment_status'] ?? '';
+            if ($event_status !== 'free' && $event_status !== 'cancelled' && !empty($event_payment_status)) {
+                $payment_text = $all_payment_statuses[$event_payment_status]['display_name'] ?? '-';
+            }
+
+            $output .= '<tr>';
+            $output .= '<td>' . htmlspecialchars(turkish_date('d M Y', strtotime($event['event_date'] ?? 'now')), ENT_QUOTES, 'UTF-8') . '</td>';
+            $output .= '<td>' . htmlspecialchars($event['unit_name'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
+            $output .= '<td>' . htmlspecialchars($event['event_name'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
+            $output .= '<td>' . htmlspecialchars($event['event_time'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
+            $output .= '<td>' . htmlspecialchars($event['contact_info'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
+            $output .= '<td>' . htmlspecialchars($status_text, ENT_QUOTES, 'UTF-8') . '</td>';
+            $output .= '<td>' . htmlspecialchars($payment_text, ENT_QUOTES, 'UTF-8') . '</td>';
+            $output .= '</tr>';
+        }
+    } else {
+        $output .= '<tr><td colspan="7" style="text-align:center;">Veri bulunamadı</td></tr>';
+    }
+
+    $output .= '</tbody></table>';
+    $output .= '<p><strong>Toplam Etkinlik:</strong> ' . count($data) . '</p>';
+    $output .= '<p><strong>Rapor Oluşturulma Tarihi:</strong> ' . htmlspecialchars(turkish_date('d M Y H:i:s'), ENT_QUOTES, 'UTF-8') . '</p>';
+    $output .= '</body></html>';
+
+    echo $output;
+    exit;
+}
+
+
 // POST isteği kontrolü
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Admin giriş işlemi
@@ -513,8 +579,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute($params);
             $report_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // TXT/DOC oluşturma
-            if (!empty($export_type) && ($export_type === 'txt' || $export_type === 'doc')) {
+            // TXT/DOC/XLS oluşturma
+            if (!empty($export_type) && in_array($export_type, ['txt', 'doc', 'xls'], true)) {
                 $title = "Çeşme Belediyesi Kültür Müdürlüğü Etkinlik Raporu";
                 $date_range = turkish_date('d M Y', strtotime($start_date)) . ' - ' . turkish_date('d M Y', strtotime($end_date));
                 $filters = [];
@@ -545,6 +611,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 if ($export_type === 'doc') {
                     generateDOC($report_data, $title, $date_range, $filters_text);
+                }
+                if ($export_type === 'xls') {
+                    generateXLS($report_data, $title, $date_range, $filters_text);
                 }
             }
             $_SESSION['report_data'] = $report_data;
@@ -2699,6 +2768,19 @@ if (isset($_SESSION['error'])) {
                                             <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                                             <button type="submit" name="generate_report" value="doc" class="btn btn-success">
                                                 <i class="fas fa-file-word me-1"></i>DOC Olarak İndir
+                                            </button>
+                                        </form>
+                                        <form method="post" accept-charset="UTF-8">
+                                            <input type="hidden" name="start_date" value="<?php echo htmlspecialchars($filters['start_date']); ?>">
+                                            <input type="hidden" name="end_date" value="<?php echo htmlspecialchars($filters['end_date']); ?>">
+                                            <?php foreach ($filters['unit_ids'] as $unit_id): ?>
+                                                <input type="hidden" name="unit_ids[]" value="<?php echo htmlspecialchars($unit_id); ?>">
+                                            <?php endforeach; ?>
+                                            <input type="hidden" name="status_filter" value="<?php echo htmlspecialchars($filters['status_filter']); ?>">
+                                            <input type="hidden" name="payment_filter" value="<?php echo htmlspecialchars($filters['payment_filter']); ?>">
+                                            <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+                                            <button type="submit" name="generate_report" value="xls" class="btn btn-warning">
+                                                <i class="fas fa-file-excel me-1"></i>XLS Olarak İndir
                                             </button>
                                         </form>
                                     </div>
