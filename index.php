@@ -216,10 +216,17 @@ if (isset($_GET['ajax'])) {
     }
 }
 
+// Yardımcı: Varsa mevcut çıktı tamponlarını temizle
+function clear_output_buffers() {
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+}
+
 // TXT dosyası oluşturma fonksiyonu (GÜNCELLENDİ)
 function generateTXT($data, $title, $date_range, $filters) {
     global $all_event_statuses, $all_payment_statuses; // YENİ: Global durumları kullan
-    ob_clean(); // Düzeltme: Önceki çıktıları (uyarılar dahil) temizle
+    clear_output_buffers(); // Düzeltme: Önceki çıktıları (uyarılar dahil) temizle
     header('Content-Type: text/plain; charset=utf-8');
     header('Content-Disposition: attachment; filename="etkinlik_raporu_' . date('Y-m-d') . '.txt"');
 
@@ -267,7 +274,7 @@ function generateTXT($data, $title, $date_range, $filters) {
 // DOC dosyası oluşturma fonksiyonu (GÜNCELLENDİ)
 function generateDOC($data, $title, $date_range, $filters) {
     global $all_event_statuses, $all_payment_statuses; // YENİ: Global durumları kullan
-    ob_clean(); // Düzeltme: Önceki çıktıları (uyarılar dahil) temizle
+    clear_output_buffers(); // Düzeltme: Önceki çıktıları (uyarılar dahil) temizle
     header('Content-Type: application/msword; charset=utf-8');
     header('Content-Disposition: attachment; filename="etkinlik_raporu_' . date('Y-m-d') . '.doc"');
 
@@ -396,7 +403,7 @@ function generateDOC($data, $title, $date_range, $filters) {
 
 function generateXLS($data, $title, $date_range, $filters) {
     global $all_event_statuses, $all_payment_statuses;
-    ob_clean();
+    clear_output_buffers();
     header('Content-Type: application/vnd.ms-excel; charset=utf-8');
     header('Content-Disposition: attachment; filename="etkinlik_raporu_' . date('Y-m-d') . '.xls"');
     header('Cache-Control: max-age=0');
