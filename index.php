@@ -258,49 +258,47 @@ function normalize_payment_amount($value) {
     return is_numeric($normalized) ? (float) $normalized : null;
 }
 
-function build_report_summary_text($data) {
+function build_status_summary_counts($data) {
     global $all_event_statuses;
 
-    $total_events = count($data);
-    $status_counts = [];
-    $free_events = 0;
-    $paid_events = 0;
+    $canonical_statuses = ['confirmed', 'option', 'free', 'cancelled'];
+    $counts = array_fill_keys($canonical_statuses, 0);
 
     foreach ($data as $event) {
-        $event_status = $event['status'] ?? '';
-        $status_label = $all_event_statuses[$event_status]['display_name'] ?? $event_status;
-        $status_label = trim((string) $status_label);
-        if ($status_label === '') {
-            $status_label = 'Belirtilmedi';
-        }
-        if (!isset($status_counts[$status_label])) {
-            $status_counts[$status_label] = 0;
-        }
-        $status_counts[$status_label]++;
-
-        $payment_value = normalize_payment_amount($event['payment'] ?? null);
-        if ($payment_value !== null && $payment_value > 0) {
-            $paid_events++;
-        } else {
-            $free_events++;
+        $status_key = $event['status'] ?? '';
+        if (isset($counts[$status_key])) {
+            $counts[$status_key]++;
         }
     }
 
-    $summary_parts = [];
-    foreach ($status_counts as $label => $count) {
-        $summary_parts[] = $count . ' ' . $label;
-    }
-    $summary_parts[] = $free_events . ' Ücretsiz';
-    $summary_parts[] = $paid_events . ' Ücretli';
+    $labels = [
+        'confirmed' => $all_event_statuses['confirmed']['display_name'] ?? 'Onaylı',
+        'option' => $all_event_statuses['option']['display_name'] ?? 'Opsiyonlu',
+        'free' => $all_event_statuses['free']['display_name'] ?? 'Ücretsiz',
+        'cancelled' => $all_event_statuses['cancelled']['display_name'] ?? 'İptal',
+    ];
 
-    $summary_text = 'Toplam ' . $total_events . ' etkinlik';
-    if (!empty($summary_parts)) {
-        $summary_text .= ': ' . implode(', ', $summary_parts) . '.';
-    } else {
-        $summary_text .= '.';
-    }
+    return [$counts, $labels];
+}
 
-    return $summary_text;
+function build_status_summary_text($data) {
+    [$counts, $labels] = build_status_summary_counts($data);
+
+    return 'Toplam: '
+        . $labels['confirmed'] . ' ' . $counts['confirmed'] . ' | '
+        . $labels['option'] . ' ' . $counts['option'] . ' | '
+        . $labels['free'] . ' ' . $counts['free'] . ' | '
+        . $labels['cancelled'] . ' ' . $counts['cancelled'];
+}
+
+function build_status_summary_html($data) {
+    [$counts, $labels] = build_status_summary_counts($data);
+
+    return 'Toplam: '
+        . htmlspecialchars($labels['confirmed'], ENT_QUOTES, 'UTF-8') . ' ' . $counts['confirmed'] . ' | '
+        . htmlspecialchars($labels['option'], ENT_QUOTES, 'UTF-8') . ' ' . $counts['option'] . ' | '
+        . htmlspecialchars($labels['free'], ENT_QUOTES, 'UTF-8') . ' ' . $counts['free'] . ' | '
+        . htmlspecialchars($labels['cancelled'], ENT_QUOTES, 'UTF-8') . ' ' . $counts['cancelled'];
 }
 
 // TXT dosyası oluşturma fonksiyonu (GÜNCELLENDİ)
@@ -344,7 +342,7 @@ function generateTXT($data, $title, $date_range, $filters) {
         }
     }
 
-    $summary_text = build_report_summary_text($data);
+    $summary_text = build_status_summary_text($data);
     $output .= $summary_text . "\r\n";
     $output .= "Rapor Oluşturulma Tarihi: " . date('d.m.Y H:i:s') . "\r\n";
 
@@ -473,9 +471,9 @@ function generateDOC($data, $title, $date_range, $filters) {
         $output .= '<td>' . $payment_text . '</td>';
         $output .= '</tr>';
     }
-    $summary_text = build_report_summary_text($data);
+    $summary_text = build_status_summary_html($data);
     $output .= '</tbody>';
-    $output .= '<tfoot><tr><td colspan="7"><strong>' . htmlspecialchars($summary_text, ENT_QUOTES, 'UTF-8') . '</strong></td></tr></tfoot>';
+    $output .= '<tfoot><tr><td colspan="7"><strong>' . $summary_text . '</strong></td></tr></tfoot>';
     $output .= '</table>';
     $output .= '<p><strong>Toplam Etkinlik:</strong> ' . count($data) . '</p>';
     $output .= '<p><strong>Rapor Oluşturulma Tarihi:</strong> ' . turkish_date('d M Y H:i:s') . '</p>';
@@ -548,9 +546,9 @@ function generateXLS($data, $title, $date_range, $filters) {
         $output .= '<tr><td colspan="7" style="text-align:center;">Veri bulunamadı</td></tr>';
     }
 
-    $summary_text = build_report_summary_text($data);
+    $summary_text = build_status_summary_html($data);
     $output .= '</tbody>';
-    $output .= '<tfoot><tr><td colspan="7"><strong>' . htmlspecialchars($summary_text, ENT_QUOTES, 'UTF-8') . '</strong></td></tr></tfoot>';
+    $output .= '<tfoot><tr><td colspan="7"><strong>' . $summary_text . '</strong></td></tr></tfoot>';
     $output .= '</table>';
     $output .= '<p><strong>Toplam Etkinlik:</strong> ' . count($data) . '</p>';
     $output .= '<p><strong>Rapor Oluşturulma Tarihi:</strong> ' . htmlspecialchars(turkish_date('d M Y H:i:s'), ENT_QUOTES, 'UTF-8') . '</p>';
