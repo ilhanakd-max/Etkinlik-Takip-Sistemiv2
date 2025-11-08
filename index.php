@@ -1223,12 +1223,26 @@ if (isset($_SESSION['error'])) {
             font-weight: 700;
             font-size: 1.3rem;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            align-items: flex-start;
+            line-height: 1.2;
         }
-        
+
+        .navbar-brand .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
         .navbar-brand i {
-            margin-right: 10px;
             font-size: 1.5rem;
+        }
+
+        .navbar-brand .brand-subtitle {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.85);
+            margin-top: 0.15rem;
         }
         
         .navbar-nav .nav-link {
@@ -1965,8 +1979,11 @@ if (isset($_SESSION['error'])) {
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="?page=index">
-                <i class="fas fa-landmark"></i>Çeşme Belediyesi Kültür Müdürlüğü
-                <span class="d-block small text-light">Etkinlik Takip Uygulaması</span>
+                <span class="brand-title">
+                    <i class="fas fa-landmark"></i>
+                    <span class="brand-name">Çeşme Belediyesi Kültür Müdürlüğü</span>
+                </span>
+                <span class="brand-subtitle">Etkinlik Takip Uygulaması</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
