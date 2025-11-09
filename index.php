@@ -912,6 +912,7 @@ if (isset($_SESSION['error'])) {
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#1a365d">
+    <meta name="description" content="Çeşme Belediyesi Kültür Müdürlüğü etkinliklerini çevrimdışı da takip edin.">
     <title>Çeşme Belediyesi Kültür Müdürlüğü - Etkinlik Takvimi</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
@@ -952,6 +953,23 @@ if (isset($_SESSION['error'])) {
             line-height: 1.6;
         }
         
+        .pwa-install-button {
+            position: fixed;
+            right: 1.25rem;
+            bottom: 1.25rem;
+            z-index: 1080;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 10px 30px rgba(26, 54, 93, 0.35);
+            padding: 0.85rem 1.5rem;
+            border-radius: 999px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary-color), #2c5282);
+            border: none;
+            color: #fff;
+        }
+
         .navbar {
             background: linear-gradient(135deg, var(--primary-color), #2c5282);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -3126,6 +3144,11 @@ if (isset($_SESSION['error'])) {
         </div>
     </div>
 
+    <button id="pwaInstallButton" class="btn btn-primary btn-lg pwa-install-button">
+        <i class="fas fa-download"></i>
+        <span>Uygulamayı Yükle</span>
+    </button>
+
     <footer class="mt-5">
         <div class="container text-center">
             <p class="mb-0">© <?php echo date('Y'); ?> Çeşme Belediyesi Kültür Müdürlüğü - Tüm hakları saklıdır.</p>
@@ -3135,6 +3158,56 @@ if (isset($_SESSION['error'])) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let deferredPwaPrompt = null;
+        const installButton = document.getElementById('pwaInstallButton');
+
+        function hideInstallButton() {
+            if (installButton) {
+                installButton.style.display = 'none';
+                installButton.disabled = false;
+            }
+        }
+
+        function showInstallButton() {
+            if (installButton) {
+                installButton.style.display = 'flex';
+                installButton.disabled = false;
+            }
+        }
+
+        if (installButton) {
+            installButton.addEventListener('click', async () => {
+                if (!deferredPwaPrompt) {
+                    return;
+                }
+
+                installButton.disabled = true;
+                deferredPwaPrompt.prompt();
+                const { outcome } = await deferredPwaPrompt.userChoice;
+                if (outcome !== 'dismissed') {
+                    hideInstallButton();
+                } else {
+                    showInstallButton();
+                }
+                deferredPwaPrompt = null;
+            });
+        }
+
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            deferredPwaPrompt = event;
+            showInstallButton();
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredPwaPrompt = null;
+            hideInstallButton();
+        });
+
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+            hideInstallButton();
+        }
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function () {
                 navigator.serviceWorker.register('service-worker.js').catch(function (error) {
