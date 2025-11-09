@@ -3601,7 +3601,7 @@ if (isset($_SESSION['error'])) {
     <footer class="mt-5">
         <div class="container text-center">
             <p class="mb-0">© <?php echo date('Y'); ?> Çeşme Belediyesi Kültür Müdürlüğü - Tüm hakları saklıdır.</p>
-            <p class="mb-0" style="font-size: 0.85rem;">Coded by İlhan Akdeniz</p>
+            <p class="mb-0" style="font-size: 0.85rem;">Created by İlhan Akdeniz</p>
         </div>
     </footer>
 
