@@ -47,13 +47,13 @@ function render_license_block_screen(string $title, string $message): void
     echo "<div style='padding:40px; font-family:Arial; text-align:center'>";
     echo "<h2 style='color:#e3342f'>" . htmlspecialchars($title) . "</h2>";
     echo "<p>" . nl2br(htmlspecialchars($message)) . "</p>";
-    echo "<p><strong>Lisans sahibi süper admin (ilhan) giriş yaparak sistemi yeniden etkinleştirebilir.</strong></p>";
+    echo "<p><strong>Lisans sahibi süper admin (Akdeniz Media Tech) giriş yaparak sistemi yeniden etkinleştirebilir.</strong></p>";
     echo "<form method='post' style='max-width:320px;margin:20px auto;text-align:left'>";
     echo "<input type='hidden' name='admin_login' value='1'>";
     echo "<div style='margin-bottom:10px'><label>Kullanıcı Adı";
-    echo "<input type='text' name='username' value='ilhan' style='width:100%;padding:8px;margin-top:4px'></label></div>";
+    echo "<input type='text' name='username' value='Kullanıcı adı' style='width:100%;padding:8px;margin-top:4px'></label></div>";
     echo "<div style='margin-bottom:10px'><label>Şifre";
-    echo "<input type='password' name='password' style='width:100%;padding:8px;margin-top:4px' placeholder='Cfm102.5'></label></div>";
+    echo "<input type='password' name='password' style='width:100%;padding:8px;margin-top:4px' placeholder='Şifre'></label></div>";
     echo "<button type='submit' style='width:100%;padding:10px;background:#2563eb;color:#fff;border:none;border-radius:4px'>Süper Admin Girişi</button>";
     echo "</form>";
     echo "<p><a href='index.php' style='color:#2563eb'>Girişe Dön</a></p>";
