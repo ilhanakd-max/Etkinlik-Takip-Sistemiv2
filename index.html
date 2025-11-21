@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Çeşme Belediyesi Kültür Müdürlüğü - Etkinlik Takvimi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #2d6a4f;
+            --accent-color: #e63946;
+            --light-color: #f8f9fa;
+            --dark-color: #14213d;
+            --success-color: #2a9d8f;
+            --warning-color: #f4a261;
+            --info-color: #3a86ff;
+            --bs-border-radius: .6rem;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), #2c5282);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 0.8rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            line-height: 1.2;
+        }
+
+        .navbar-brand .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-brand i {
+            font-size: 1.5rem;
+        }
+
+        .navbar-brand .brand-subtitle {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.85);
+            margin-top: 0.15rem;
+        }
+
+        .navbar-nav .nav-link {
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover, .navbar-nav .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .container {
+            max-width: 1400px;
+        }
+
+        .card, .admin-panel, .month-selector, .unit-selector, .legend {
+            border: none;
+            border-radius: var(--bs-border-radius);
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .card:hover, .admin-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color), #2c5282);
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .calendar-view {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-view {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .day-card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+            background-color: white;
+            border-radius: var(--bs-border-radius);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .day-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .day-card.no-events {
+            background-color: #f8f9fa;
+        }
+
+        .day-header {
+            font-weight: 600;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), #2c5282);
+            color: white;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .day-header-content {
+            flex-grow: 1;
+        }
+
+        .day-header-actions {
+            margin-left: 10px;
+        }
+
+        .day-card.weekend .day-header {
+            background: linear-gradient(135deg, var(--secondary-color), #40916c);
+        }
+
+        .day-card.holiday .day-header {
+            background: linear-gradient(135deg, var(--warning-color), #e76f51);
+        }
+
+        .day-card .day-content {
+            padding: 1rem;
+            flex-grow: 1;
+        }
+
+        .event-item {
+            position: relative;
+            padding: 1rem;
+            border-top: 1px solid #e9ecef;
+            transition: background-color 0.2s ease;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            background-color: #f8fafc;
+        }
+.event-item:first-child {
+            border-top: none;
+        }
+
+        .event-item:hover {
+            background-color: #e2e8f0;
+        }
+
+        .event-item h6 {
+            margin-bottom: 0.25rem; /* Küçültüldü */
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.85rem; /* Küçültüldü */
+        }
+
+        .event-time, .event-contact, .event-notes {
+            font-size: 0.8rem; /* Küçültüldü */
+            color: #64748b;
+            margin-bottom: 3px; /* Küçültüldü */
+        }
+
+        .event-status {
+            margin-top: 0.5rem;
+        }
+
+        .event-status .badge {
+            margin-right: 5px;
+            font-size: 0.75rem;
+            padding: 0.4rem 0.6rem;
+        }
+
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: var(--bs-border-radius);
+            box-shadow: var(--card-shadow);
+        }
+
+        footer {
+            background: linear-gradient(135deg, var(--primary-color), #2c5282);
+            color: white;
+            padding: 1.5rem 0;
+            margin-top: 3rem;
+        }
+
+        .welcome-message {
+            background: linear-gradient(135deg, var(--primary-color), #2c5282);
+            color: white;
+            border-radius: var(--bs-border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .admin-badge {
+            background-color: var(--success-color);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .btn-edit-quick, .btn-delete-quick, .btn-add-day {
+            position: relative;
+            color: #94a3b8;
+            background-color: transparent;
+            border: none;
+            padding: 0.5rem;
+            line-height: 1;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            opacity: 0;
+            z-index: 10;
+            font-size: 0.8rem;
+            margin-left: 5px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .event-item:hover .btn-edit-quick,
+        .event-item:hover .btn-delete-quick,
+        .day-card:hover .btn-add-day {
+            opacity: 1;
+        }
+
+        /* GÜNCELLENDİ: Grid görünümünde hover butonu her zaman görünür olsun */
+        @media (min-width: 992px) {
+            .day-card:hover .btn-add-day {
+                opacity: 1;
+            }
+            .day-card .day-header-actions .btn-add-day {
+                opacity: 0; /* Normalde gizli */
+            }
+            .day-card:hover .day-header-actions .btn-add-day {
+                opacity: 1; /* Hover'da görünür */
+            }
+        }
+
+        .btn-edit-quick:hover {
+            color: var(--primary-color);
+            background-color: #e2e8f0;
+        }
+
+        .btn-delete-quick:hover {
+            color: var(--accent-color);
+            background-color: #fecaca;
+        }
+
+        .btn-add-day:hover {
+            color: var(--info-color);
+            background-color: #dbeafe;
+        }
+
+        .payment-status-container {
+            transition: all 0.3s ease;
+        }
+
+        .payment-status-container.hidden {
+            display: none !important;
+        }
+
+        /* .bg-purple artık kullanılmıyor, var(--payment-color-to_be_paid) tarafından yönetiliyor */
+
+        .report-filters {
+            background-color: #f8fafc;
+            padding: 1.5rem;
+            border-radius: var(--bs-border-radius);
+            margin-bottom: 1.5rem;
+        }
+
+        .unit-checkboxes {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background-color: white;
+        }
+
+        .report-summary {
+            background: linear-gradient(135deg, var(--primary-color), #2c5282);
+            color: white;
+            padding: 1.5rem;
+            border-radius: var(--bs-border-radius);
+            margin-bottom: 1.5rem;
+        }
+
+        .export-buttons {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: #f8fafc;
+            border-radius: var(--bs-border-radius);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: var(--bs-border-radius);
+            box-shadow: 0 0 0 1px #e2e8f0;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 1rem;
+        }
+
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-color: #e2e8f0;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .table th.actions, .table td.actions {
+            width: 1%;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .action-buttons .btn {
+            margin: 0 2px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 0.4rem;
+        }
+
+        .existing-events {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            background-color: white;
+        }
+
+        .event-list-item {
+            padding: 0.8rem;
+            border-bottom: 1px solid #e2e8f0;
+            border-radius: 0.4rem;
+            margin-bottom: 0.5rem;
+            background-color: #f8fafc;
+        }
+
+        .event-list-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .announcement-section {
+            background-color: white;
+            border-radius: var(--bs-border-radius);
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .accordion-button:focus {
+            box-shadow: 0 0 0 0.25rem rgba(26, 54, 93, 0.25);
+        }
+
+        .badge-new {
+            font-size: 0.75em;
+            padding: .3em .6em;
+            margin-left: 8px;
+        }
+
+        .announcement-meta {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+
+        .btn {
+            border-radius: 0.5rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #2c5282);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 54, 93, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #2a9d8f);
+            border: none;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning-color), #f4a261);
+            border: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-color), #e63946);
+            border: none;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, var(--info-color), #3a86ff);
+            border: none;
+        }
+
+        .form-control, .form-select {
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid #cbd5e1;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(26, 54, 93, 0.25);
+            border-color: var(--primary-color);
+        }
+
+        .alert {
+            border-radius: 0.5rem;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 0.5rem 0.5rem 0 0;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background-color: white;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+            background-color: #f1f5f9;
+        }
+
+        .modal-content {
+            border-radius: var(--bs-border-radius);
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), #2c5282);
+            color: white;
+            border-radius: var(--bs-border-radius) var(--bs-border-radius) 0 0;
+            padding: 1.5rem;
+        }
+
+        .modal-title {
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .badge {
+            font-weight: 500;
+            border-radius: 0.5rem;
+        }
+
+        .legend .badge {
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group .btn {
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+
+        .input-group .form-control:first-child {
+            border-radius: 0.5rem 0 0 0.5rem;
+        }
+
+        .input-group-text {
+            border-radius: 0.5rem 0 0 0.5rem;
+        }
+
+        /* YENİ: Takvim Grid Stilleri */
+        .calendar-header {
+            display: none; /* Mobilde gizli */
+        }
+
+        .calendar-view {
+            display: grid;
+            /* Mobilde (varsayılan) dikey liste */
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 992px) {
+            /* Masaüstü: Haftalık Grid Başlığı */
+            .calendar-header {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 5px;
+                margin-bottom: 0.5rem;
+            }
+            .calendar-header-day {
+                text-align: center;
+                font-weight: 600;
+                padding: 0.75rem 0.25rem;
+                background-color: var(--primary-color);
+                color: white;
+                border-radius: 0.5rem;
+            }
+
+            /* Masaüstü: 7 Sütunlu Takvim Grid'i */
+            .calendar-view {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 0; /* Boşlukları kaldır, kenarlıklar yönetecek */
+                border: 1px solid #e2e8f0;
+                border-radius: var(--bs-border-radius);
+                overflow: hidden;
+                background-color: white;
+            }
+
+            .day-card {
+                border-radius: 0;
+                margin-bottom: 0;
+                box-shadow: none;
+                border: none;
+                border-top: 1px solid #e9ecef;
+                border-left: 1px solid #e9ecef;
+                min-height: 150px; /* Gün kutularına minimum yükseklik */
+                transition: background-color 0.2s ease;
+            }
+
+            /* Grid kenarlıklarını temizle */
+            .calendar-view .day-card:nth-child(7n + 1) {
+                border-left: none;
+            }
+            .calendar-view .day-card:nth-child(-n + 7) {
+                border-top: none;
+            }
+
+            /* Hover efektlerini kaldır/azalt */
+            .card:hover, .admin-panel:hover {
+                transform: none;
+                box-shadow: var(--card-shadow);
+            }
+            .day-card:hover {
+                transform: none;
+                box-shadow: none;
+                background-color: #f8fafc;
+            }
+
+            /* Gün Başlığını Küçült */
+            .day-header {
+                font-weight: 600;
+                padding: 0.5rem;
+                background: none; /* Arkaplanı kaldır */
+                color: #334155; /* Normal metin rengi */
+                font-size: 0.85rem;
+                border-bottom: none; /* Kenarlığı kaldır */
+            }
+
+            /* Hafta sonu/Tatil renklerini ayarla */
+            .day-card.weekend .day-header-content .day-number {
+                color: var(--secondary-color);
+            }
+            .day-card.holiday .day-header-content .day-number {
+                color: #b45309; /* Koyu turuncu */
+                font-weight: 700;
+            }
+
+            /* Mobildeki tam tarihi gizle */
+            .day-header-content .day-full-date {
+                display: none;
+            }
+            /* Masaüstünde gün numarasını göster */
+            .day-header-content .day-number {
+                display: block;
+                font-size: 1.1rem;
+                font-weight: 600;
+            }
+
+            /* Başlıktaki rozetleri gizle (renk yeterli) - DÜZELTME: Tatil etiketleri artık gösteriliyor */
+            .day-header-content .badge {
+                /* display: none; */
+            }
+
+            /* İçeriği küçült */
+            .day-card .day-content {
+                padding: 0.5rem;
+                flex-grow: 1;
+            }
+
+            /* "Etkinlik yok" yazısını gizle */
+            .day-card.no-events .day-content .text-muted {
+                display: none;
+            }
+
+            /* Boş gün kutuları */
+            .day-card.empty {
+                background-color: #f8fafc;
+                min-height: auto;
+            }
+        }
+/* GÜNCELLENDİ: Masaüstü için gün numarası (varsayılan gizli) */
+        .day-header-content .day-number {
+            display: none;
+        }
+
+        /* GÜNCELLENDİ: Mobildeki başlık (varsayılan görünür) */
+        .day-header-content .day-full-date {
+            display: block;
+        }
+
+
+        /* GÖLGELENDİRME EKLENTİSİ: Etkinlik kutularının daha belirgin görünmesi için */
+        .day-card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+            transition: all 0.3s ease;
+        }
+
+        .day-card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.12) !important;
+            transform: translateY(-2px);
+        }
+
+        .event-item {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+            border-radius: 0.4rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .event-item:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08) !important;
+        }
+
+        /* Takvim grid görünümü için gölgelendirme ayarı */
+        @media (min-width: 992px) {
+            .calendar-view .day-card {
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06) !important;
+            }
+
+            .calendar-view .day-card:hover {
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+            }
+        }
+
+
+
+        /* TABLO ÇERÇEVE EKLENTİSİ: Tüm tablolara siyah çerçeve */
+        .table {
+            border: 2px solid #000000 !important;
+            border-collapse: separate !important;
+            border-radius: 8px !important;
+            overflow: hidden !important;
+        }
+
+        .table th {
+            border: 1px solid #000000 !important;
+            background-color: var(--primary-color) !important;
+            color: white !important;
+            padding: 12px !important;
+        }
+
+        .table td {
+            border: 1px solid #000000 !important;
+            padding: 10px !important;
+        }
+
+        .table tbody tr:nth-child(even) {
+            background-color: #f8f9fa !important;
+        }
+
+        .table tbody tr:hover {
+            background-color: #e9ecef !important;
+        }
+
+        .table-responsive {
+            border: 2px solid #000000 !important;
+            border-radius: 8px !important;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <span class="brand-title">
+                    <i class="fas fa-landmark"></i>
+                    <span class="brand-name">Çeşme Belediyesi Kültür Müdürlüğü</span>
+                </span>
+                <span class="brand-subtitle">Etkinlik Takip Uygulaması</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="home-link">Ana Sayfa</a>
+                    </li>
+                    <li class="nav-item" id="admin-panel-link" style="display: none;">
+                        <a class="nav-link" href="#" id="admin-link">Admin Paneli</a>
+                    </li>
+                    <li class="nav-item" id="admin-user-info" style="display: none;">
+                        <span class="nav-link admin-badge">
+                            <i class="fas fa-user me-1"></i><span id="admin-username"></span>
+                        </span>
+                    </li>
+                    <li class="nav-item" id="logout-link" style="display: none;">
+                        <button id="logout-button" class="btn btn-outline-light btn-sm">Çıkış</button>
+                    </li>
+                    <li class="nav-item" id="login-link">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Admin Girişi</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main id="app-container" class="container mt-4">
+        <!-- App content will be rendered here -->
+    </main>
+
+    <!-- Modals -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Admin Girişi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="login-form">
+                    <div class="modal-body">
+                        <div id="login-error" class="alert alert-danger" style="display: none;"></div>
+                        <div class="mb-3">
+                            <label for="login_username" class="form-label">Kullanıcı Adı</label>
+                            <input type="text" class="form-control" id="login_username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="login_password" class="form-label">Şifre</label>
+                            <input type="password" class="form-control" id="login_password" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">Giriş Yap</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+         <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="event-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="eventModalLabel">Etkinlik Ekle/Düzenle</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="event-id">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="event-date" class="form-label">Tarih</label>
+                                <input type="date" class="form-control" id="event-date" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="event-time" class="form-label">Saat</label>
+                                <input type="time" class="form-control" id="event-time" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="event-name" class="form-label">Etkinlik Adı</label>
+                            <input type="text" class="form-control" id="event-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="event-unit" class="form-label">Birim</label>
+                            <select class="form-select" id="event-unit" required>
+                                <!-- Unit options will be populated by JS -->
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="event-status" class="form-label">Etkinlik Durumu</label>
+                                <select class="form-select" id="event-status" required>
+                                    <!-- Event status options will be populated by JS -->
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="event-payment-status" class="form-label">Ödeme Durumu</label>
+                                <select class="form-select" id="event-payment-status" required>
+                                    <!-- Payment status options will be populated by JS -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="event-contact" class="form-label">İletişim Bilgisi</label>
+                            <input type="text" class="form-control" id="event-contact">
+                        </div>
+                        <div class="mb-3">
+                            <label for="event-notes" class="form-label">Notlar</label>
+                            <textarea class="form-control" id="event-notes" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="unitModal" tabindex="-1" aria-labelledby="unitModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="unit-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="unitModalLabel">Birim Ekle/Düzenle</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="unit-id">
+                        <div class="mb-3">
+                            <label for="unit-name" class="form-label">Birim Adı</label>
+                            <input type="text" class="form-control" id="unit-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="unit-color" class="form-label">Renk</label>
+                            <input type="color" class="form-control form-control-color" id="unit-color" required>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="unit-is-active" checked>
+                            <label class="form-check-label" for="unit-is-active">
+                                Aktif
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="holidayModal" tabindex="-1" aria-labelledby="holidayModalLabel" aria-hidden="true">
+         <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="holiday-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="holidayModalLabel">Tatil Ekle/Düzenle</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="holiday-id">
+                        <div class="mb-3">
+                            <label for="holiday-name" class="form-label">Tatil Adı</label>
+                            <input type="text" class="form-control" id="holiday-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="holiday-date" class="form-label">Tarih</label>
+                            <input type="date" class="form-control" id="holiday-date" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="announcementModal" tabindex="-1" aria-labelledby="announcementModalLabel" aria-hidden="true">
+       <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="announcement-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="announcementModalLabel">Duyuru Ekle/Düzenle</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="announcement-id">
+                        <div class="mb-3">
+                            <label for="announcement-content" class="form-label">Duyuru İçeriği</label>
+                            <textarea class="form-control" id="announcement-content" rows="4" required></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="announcement-start" class="form-label">Başlangıç Tarihi</label>
+                                <input type="date" class="form-control" id="announcement-start" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="announcement-end" class="form-label">Bitiş Tarihi</label>
+                                <input type="date" class="form-control" id="announcement-end" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="adminUserModal" tabindex="-1" aria-labelledby="adminUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="user-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="adminUserModalLabel">Kullanıcı Ekle/Düzenle</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="user-id">
+                        <div class="mb-3">
+                            <label for="user-username" class="form-label">Kullanıcı Adı</label>
+                            <input type="text" class="form-control" id="user-username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="user-password" class="form-label">Şifre (Değiştirmek için doldurun)</label>
+                            <input type="password" class="form-control" id="user-password">
+                        </div>
+                        <div class="mb-3">
+                            <label for="user-fullname" class="form-label">Tam Ad</label>
+                            <input type="text" class="form-control" id="user-fullname">
+                        </div>
+                        <div class="mb-3">
+                            <label for="user-email" class="form-label">E-posta</label>
+                            <input type="email" class="form-control" id="user-email">
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="user-is-active" checked>
+                            <label class="form-check-label" for="user-is-active">Aktif</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-5">
+        <div class="container text-center">
+            <p class="mb-0">© 2024 Çeşme Belediyesi Kültür Müdürlüğü - Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const App = {
+                data: {
+                    events: [],
+                    units: [],
+                    holidays: [],
+                    announcements: [],
+                    users: [],
+                    settings: {
+                        event_statuses: {},
+                        payment_statuses: {}
+                    },
+                    currentUser: null,
+                    currentView: 'home', // home or admin
+                    adminTab: 'events',
+                    selectedMonth: new Date().getMonth() + 1,
+                    selectedYear: new Date().getFullYear(),
+                    selectedUnit: 1,
+                    searchTerm: '',
+                },
+
+                init() {
+                    this.initData();
+                    this.render();
+                    this.initModals();
+                },
+
+                initData() {
+                    if (!localStorage.getItem('appData')) {
+                        this.data = this.getDefaultData();
+                        this.saveData();
+                    } else {
+                        this.data = JSON.parse(localStorage.getItem('appData'));
+                    }
+                },
+
+                saveData() {
+                    localStorage.setItem('appData', JSON.stringify(this.data));
+                },
+
+                 generateId(arr) {
+                    return arr.length > 0 ? Math.max(...arr.map(item => item.id)) + 1 : 1;
+                },
+
+                // CRUD Operations
+                addEvent(eventData) { eventData.id = this.generateId(this.data.events); this.data.events.push(eventData); this.saveData(); this.render(); },
+                updateEvent(eventData) { const index = this.data.events.findIndex(e => e.id === eventData.id); if (index !== -1) { this.data.events[index] = eventData; this.saveData(); this.render(); } },
+                deleteEvent(eventId) { if (confirm('Bu etkinliği silmek istediğinizden emin misiniz?')) { this.data.events = this.data.events.filter(e => e.id !== eventId); this.saveData(); this.render(); } },
+                addUnit(unitData) { unitData.id = this.generateId(this.data.units); this.data.units.push(unitData); this.saveData(); this.render(); },
+                updateUnit(unitData) { const index = this.data.units.findIndex(u => u.id === unitData.id); if (index !== -1) { this.data.units[index] = unitData; this.saveData(); this.render(); } },
+                deleteUnit(unitId) { if (this.data.events.some(e => e.unit_id === unitId)) { alert('Bu birime ait etkinlikler var. Lütfen önce bu etkinlikleri silin veya başka bir birime atayın.'); return; } if (confirm('Bu birimi silmek istediğinizden emin misiniz?')) { this.data.units = this.data.units.filter(u => u.id !== unitId); this.saveData(); this.render(); } },
+                addHoliday(holidayData) { holidayData.id = this.generateId(this.data.holidays); this.data.holidays.push(holidayData); this.saveData(); this.render(); },
+                updateHoliday(holidayData) { const index = this.data.holidays.findIndex(h => h.id === holidayData.id); if (index !== -1) { this.data.holidays[index] = holidayData; this.saveData(); this.render(); } },
+                deleteHoliday(holidayId) { if (confirm('Bu tatili silmek istediğinizden emin misiniz?')) { this.data.holidays = this.data.holidays.filter(h => h.id !== holidayId); this.saveData(); this.render(); } },
+                addAnnouncement(annoData) { annoData.id = this.generateId(this.data.announcements); annoData.author_id = this.data.currentUser.id; annoData.created_at = new Date().toISOString(); this.data.announcements.push(annoData); this.saveData(); this.render(); },
+                updateAnnouncement(annoData) { const index = this.data.announcements.findIndex(a => a.id === annoData.id); if (index !== -1) { this.data.announcements[index] = { ...this.data.announcements[index], ...annoData }; this.saveData(); this.render(); } },
+                deleteAnnouncement(annoId) { if (confirm('Bu duyuruyu silmek istediğinizden emin misiniz?')) { this.data.announcements = this.data.announcements.filter(a => a.id !== annoId); this.saveData(); this.render(); } },
+                addUser(userData) { if(this.data.users.some(u => u.username === userData.username)) { alert('Bu kullanıcı adı zaten mevcut.'); return; } userData.id = this.generateId(this.data.users); this.data.users.push(userData); this.saveData(); this.render(); },
+                updateUser(userData) { const index = this.data.users.findIndex(u => u.id === userData.id); if (index !== -1) { this.data.users[index] = { ...this.data.users[index], ...userData }; this.saveData(); this.render(); } },
+                deleteUser(userId) { if (userId === 1) { alert('Admin kullanıcısı silinemez.'); return; } if (confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) { this.data.users = this.data.users.filter(u => u.id !== userId); this.saveData(); this.render(); } },
+
+                getDefaultData() {
+                    return {
+                        events: [],
+                        units: [
+                            { id: 1, unit_name: 'Amfi Tiyatro', color: '#3498db', is_active: true },
+                            { id: 2, unit_name: 'Açık Hava Tiyatrosu', color: '#e74c3c', is_active: true },
+                        ],
+                        holidays: [],
+                        announcements: [],
+                        users: [
+                            { id: 1, username: 'admin', password: 'password', full_name: 'Admin User', email: '', is_active: true, created_at: new Date().toISOString() }
+                        ],
+                        settings: {
+                            event_statuses: {
+                                confirmed: { display_name: 'Onaylı', color: '#2ecc71' },
+                                option: { display_name: 'Opsiyon', color: '#f1c40f' },
+                                cancelled: { display_name: 'İptal', color: '#e74c3c' },
+                                free: { display_name: 'Ücretsiz', color: '#9b59b6' }
+                            },
+                            payment_statuses: {
+                                paid: { display_name: 'Ödendi', color: '#27ae60' },
+                                not_paid: { display_name: 'Ödenmedi', color: '#c0392b' },
+                                to_be_paid: { display_name: 'Ödeme Bekleniyor', color: '#d35400' }
+                            }
+                        },
+                        currentUser: null,
+                        currentView: 'home',
+                        adminTab: 'events',
+                        selectedMonth: new Date().getMonth() + 1,
+                        selectedYear: new Date().getFullYear(),
+                        selectedUnit: 1,
+                        searchTerm: '',
+                    };
+                },
+
+                render() {
+                    this.renderNavbar();
+                    if (this.data.currentView === 'home') {
+                        this.renderHomePage();
+                    } else if (this.data.currentView === 'admin') {
+                        this.renderAdminPage();
+                    }
+                },
+
+                renderNavbar() {
+                    const adminPanelLink = document.getElementById('admin-panel-link');
+                    const adminUserInfo = document.getElementById('admin-user-info');
+                    const logoutLink = document.getElementById('logout-link');
+                    const loginLink = document.getElementById('login-link');
+                    const adminUsername = document.getElementById('admin-username');
+
+                    if (this.data.currentUser) {
+                        adminPanelLink.style.display = 'block';
+                        adminUserInfo.style.display = 'block';
+                        logoutLink.style.display = 'block';
+                        loginLink.style.display = 'none';
+                        adminUsername.textContent = this.data.currentUser.username;
+                    } else {
+                        adminPanelLink.style.display = 'none';
+                        adminUserInfo.style.display = 'none';
+                        logoutLink.style.display = 'none';
+                        loginLink.style.display = 'block';
+                    }
+                },
+
+                renderHomePage() {
+                    const container = document.getElementById('app-container');
+                    const { units, settings, selectedUnit, selectedMonth, selectedYear, searchTerm } = this.data;
+
+                    let homeHTML = `
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="unit-selector card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Birim Seçimi</h5>
+                                        <form>
+                                            <select class="form-select" id="unit-select">
+                                                ${units.filter(u=>u.is_active).map(unit => `<option value="${unit.id}" ${unit.id === selectedUnit ? 'selected' : ''}>${unit.unit_name}</option>`).join('')}
+                                            </select>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="month-selector card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Ay Seçimi</h5>
+                                        <form class="d-flex">
+                                            <select class="form-select me-2" id="month-select">
+                                                ${this.getTurkishMonths().map((month, index) => `<option value="${index + 1}" ${index + 1 === selectedMonth ? 'selected' : ''}>${month}</option>`).join('')}
+                                            </select>
+                                            <input type="number" class="form-control me-2" id="year-input" value="${selectedYear}">
+                                            <button class="btn btn-primary" id="date-go-btn">Git</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Etkinlik Ara</h5>
+                                <form id="search-form">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="search-input" placeholder="Etkinlik adı, iletişim, notlar..." value="${searchTerm}">
+                                        <button class="btn btn-primary" type="submit">Ara</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    `;
+
+                     if (searchTerm) {
+                        const filteredEvents = this.data.events.filter(event => {
+                            const term = searchTerm.toLowerCase();
+                            return (
+                                event.event_name.toLowerCase().includes(term) ||
+                                (event.contact_info && event.contact_info.toLowerCase().includes(term)) ||
+                                (event.notes && event.notes.toLowerCase().includes(term))
+                            );
+                        }).sort((a,b) => new Date(b.event_date) - new Date(a.event_date));
+
+                        homeHTML += `
+                            <div class="card">
+                                <div class="card-header">
+                                    Arama Sonuçları için "${searchTerm}" (${filteredEvents.length} sonuç)
+                                    <button id="clear-search-btn" class="btn btn-sm btn-outline-light float-end">Aramayı Temizle</button>
+                                </div>
+                                <div class="card-body">
+                                    ${this.renderListView(filteredEvents)}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        homeHTML += `
+                            <div class="legend card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">Renk Anlamları</h5>
+                                    <div class="d-flex flex-wrap gap-3">
+                                        ${Object.values(settings.event_statuses).map(status => `<span class="badge" style="background-color: ${status.color};">${status.display_name}</span>`).join('')}
+                                        ${Object.values(settings.payment_statuses).map(status => `<span class="badge" style="background-color: ${status.color};">${status.display_name}</span>`).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="calendar-header" aria-hidden="true">
+                                <div class="calendar-header-day">Pazartesi</div>
+                                <div class="calendar-header-day">Salı</div>
+                                <div class="calendar-header-day">Çarşamba</div>
+                                <div class="calendar-header-day">Perşembe</div>
+                                <div class="calendar-header-day">Cuma</div>
+                                <div class="calendar-header-day">Cumartesi</div>
+                                <div class="calendar-header-day">Pazar</div>
+                            </div>
+                            <div class="calendar-view">
+                                ${this.renderCalendar()}
+                            </div>
+                        `;
+                    }
+
+                    container.innerHTML = homeHTML;
+                    this.attachHomeEventListeners();
+                },
+                 renderListView(events) {
+                    if(events.length === 0){
+                        return '<p class="text-center text-muted">Arama kriterlerinize uygun etkinlik bulunamadı.</p>';
+                    }
+
+                    return `
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Birim</th>
+                                        <th>Etkinlik Adı</th>
+                                        <th>Saat</th>
+                                        <th>İletişim</th>
+                                        <th>Durum</th>
+                                        <th>Ödeme</th>
+                                        <th>Notlar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${events.map(event => this.renderEventRowForSearch(event)).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                },
+
+                renderEventRowForSearch(event) {
+                    const { units, settings } = this.data;
+                    const unit = units.find(u => u.id === event.unit_id) || { unit_name: 'Bilinmeyen' };
+                    const eventStatus = settings.event_statuses[event.status] || { display_name: 'Bilinmeyen' };
+                    const paymentStatus = settings.payment_statuses[event.payment_status] || { display_name: 'Bilinmeyen' };
+
+                    return `
+                        <tr>
+                            <td>${event.event_date}</td>
+                            <td>${unit.unit_name}</td>
+                            <td>${event.event_name}</td>
+                            <td>${event.event_time}</td>
+                            <td>${event.contact_info || ''}</td>
+                            <td><span class="badge" style="background-color:${eventStatus.color}">${eventStatus.display_name}</span></td>
+                            <td><span class="badge" style="background-color:${paymentStatus.color}">${paymentStatus.display_name}</span></td>
+                            <td>${event.notes || ''}</td>
+                        </tr>
+                    `;
+                },
+
+                renderCalendar() {
+                    const { selectedMonth, selectedYear, events, holidays, units } = this.data;
+                    const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+                    const firstDayOfMonth = new Date(selectedYear, selectedMonth - 1, 1).getDay();
+                    const startDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+
+                    let calendarHTML = '';
+                    for (let i = 0; i < startDay; i++) {
+                        calendarHTML += '<div class="day-card empty"></div>';
+                    }
+
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const date = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        const dayEvents = events.filter(event => event.event_date === date && event.unit_id === this.data.selectedUnit);
+                        const holiday = holidays.find(h => h.holiday_date === date);
+                        const dayOfWeek = new Date(date).getDay();
+                        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+                        let dayCardClass = 'day-card';
+                        if (holiday) dayCardClass += ' holiday';
+                        if (isWeekend) dayCardClass += ' weekend';
+                        if (dayEvents.length === 0) dayCardClass += ' no-events';
+
+                        calendarHTML += `
+                            <div class="${dayCardClass}">
+                                <div class="day-header">
+                                    <div class="day-header-content">
+                                        <span class="day-full-date">${this.turkishDate('d M Y, l', new Date(date))}</span>
+                                        <span class="day-number">${day}</span>
+                                        ${holiday ? `<span class="badge bg-warning ms-2">${holiday.holiday_name}</span>` : ''}
+                                        ${isWeekend && !holiday ? `<span class="badge bg-info ms-2">Hafta Sonu</span>` : ''}
+                                    </div>
+                                    ${this.data.currentUser ? `<div class="day-header-actions"><button class="btn-add-day" data-date="${date}"><i class="fas fa-plus"></i></button></div>` : ''}
+                                </div>
+                                <div class="day-content">
+                                    ${dayEvents.map(event => this.renderEvent(event, units)).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    return calendarHTML;
+                },
+
+                renderEvent(event, units) {
+                    const unit = units.find(u => u.id === event.unit_id);
+                    const eventStatus = this.data.settings.event_statuses[event.status];
+                    const paymentStatus = this.data.settings.payment_statuses[event.payment_status];
+
+                    return `
+                        <div class="event-item" style="border-left: 4px solid ${unit.color};">
+                            <h6>${event.event_name}</h6>
+                            <p class="event-time"><i class="fas fa-clock me-1"></i>${event.event_time}</p>
+                            ${event.contact_info ? `<p class="event-contact"><i class="fas fa-phone me-1"></i>${event.contact_info}</p>` : ''}
+                            ${event.notes ? `<p class="event-notes"><i class="fas fa-sticky-note me-1"></i>${event.notes}</p>` : ''}
+                            <div class="event-status">
+                                ${eventStatus ? `<span class="badge" style="background-color: ${eventStatus.color};">${eventStatus.display_name}</span>` : ''}
+                                ${paymentStatus ? `<span class="badge" style="background-color: ${paymentStatus.color};">${paymentStatus.display_name}</span>` : ''}
+                            </div>
+                            ${this.data.currentUser ? `
+                                <button class="btn-edit-quick" data-id="${event.id}"><i class="fas fa-edit"></i></button>
+                                <button class="btn-delete-quick" data-id="${event.id}"><i class="fas fa-trash"></i></button>
+                            ` : ''}
+                        </div>
+                    `;
+                },
+
+                attachHomeEventListeners() {
+                    if(!this.data.searchTerm) {
+                        document.getElementById('unit-select').addEventListener('change', (e) => { this.data.selectedUnit = parseInt(e.target.value, 10); this.renderHomePage(); });
+                        document.getElementById('date-go-btn').addEventListener('click', (e) => { e.preventDefault(); this.data.selectedMonth = parseInt(document.getElementById('month-select').value, 10); this.data.selectedYear = parseInt(document.getElementById('year-input').value, 10); this.renderHomePage(); });
+                    } else {
+                        document.getElementById('clear-search-btn').addEventListener('click', () => { this.data.searchTerm = ''; this.renderHomePage(); });
+                    }
+                    document.getElementById('search-form').addEventListener('submit', (e) => { e.preventDefault(); this.data.searchTerm = document.getElementById('search-input').value; this.renderHomePage(); });
+                },
+
+                getTurkishMonths() { return ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']; },
+                getTurkishDays() { return ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi']; },
+                turkishDate(format, date) { const day = date.getDate(); const month = this.getTurkishMonths()[date.getMonth()]; const year = date.getFullYear(); const dayName = this.getTurkishDays()[date.getDay()]; return format.replace('d', String(day).padStart(2, '0')).replace('M', month).replace('Y', year).replace('l', dayName); },
+
+                renderAdminPage() {
+                    const container = document.getElementById('app-container');
+                    const { adminTab } = this.data;
+                    container.innerHTML = `
+                        <div class="welcome-message"> <h2 class="mb-3">Hoş Geldiniz, ${this.data.currentUser.full_name || this.data.currentUser.username}</h2> <p class="mb-0">Admin panelinden etkinlikleri, birimleri ve tatilleri yönetebilirsiniz.</p> </div>
+                        <ul class="nav nav-tabs mb-4" id="admin-tabs">
+                            <li class="nav-item"><a class="nav-link ${adminTab === 'events' ? 'active' : ''}" href="#" data-tab="events">Etkinlik Yönetimi</a></li>
+                            <li class="nav-item"><a class="nav-link ${adminTab === 'units' ? 'active' : ''}" href="#" data-tab="units">Birim Yönetimi</a></li>
+                            <li class="nav-item"><a class="nav-link ${adminTab === 'holidays' ? 'active' : ''}" href="#" data-tab="holidays">Tatil Yönetimi</a></li>
+                            <li class="nav-item"><a class="nav-link ${adminTab === 'announcements' ? 'active' : ''}" href="#" data-tab="announcements">Duyuru Yönetimi</a></li>
+                            <li class="nav-item"><a class="nav-link ${adminTab === 'reports' ? 'active' : ''}" href="#" data-tab="reports">Raporlama</a></li>
+                            <li class="nav-item"><a class="nav-link ${adminTab === 'users' ? 'active' : ''}" href="#" data-tab="users">Kullanıcı Yönetimi</a></li>
+                            <li class="nav-item"><a class="nav-link ${adminTab === 'settings' ? 'active' : ''}" href="#" data-tab="settings">Ayarlar</a></li>
+                        </ul>
+                        <div class="admin-panel card"> <div class="card-body" id="admin-content"></div> </div>`;
+                    this.renderAdminTabContent();
+                    this.attachAdminEventListeners();
+                },
+
+                renderAdminTabContent() {
+                    const { adminTab } = this.data;
+                    if (adminTab === 'events') this.renderEventsTab();
+                    if (adminTab === 'units') this.renderUnitsTab();
+                    if (adminTab === 'holidays') this.renderHolidaysTab();
+                    if (adminTab === 'announcements') this.renderAnnouncementsTab();
+                    if (adminTab === 'reports') this.renderReportsTab();
+                    if (adminTab === 'users') this.renderUsersTab();
+                    if (adminTab === 'settings') this.renderSettingsTab();
+                },
+
+                attachAdminEventListeners() {
+                    document.getElementById('admin-tabs').addEventListener('click', (e) => { if (e.target.tagName === 'A') { e.preventDefault(); this.data.adminTab = e.target.dataset.tab; this.renderAdminPage(); } });
+                    const { adminTab } = this.data;
+                    if (adminTab === 'events') this.attachEventsTabListeners();
+                    if (adminTab === 'units') this.attachUnitsTabListeners();
+                    if (adminTab === 'holidays') this.attachHolidaysTabListeners();
+                    if (adminTab === 'announcements') this.attachAnnouncementsTabListeners();
+                    if (adminTab === 'reports') this.attachReportsTabListeners();
+                    if (adminTab === 'users') this.attachUsersTabListeners();
+                },
+
+                renderEventsTab() {
+                    const content = document.getElementById('admin-content');
+                    const events = this.data.events.sort((a,b) => new Date(b.event_date) - new Date(a.event_date));
+                    content.innerHTML = ` <h5 class="card-title">Etkinlik Yönetimi</h5> <button class="btn btn-primary mb-3" id="add-event-btn"> <i class="fas fa-plus me-1"></i>Yeni Etkinlik Ekle </button> <div class="table-responsive"> <table class="table table-hover"> <thead> <tr> <th>ID</th> <th>Tarih</th> <th>Birim</th> <th>Etkinlik Adı</th> <th>Saat</th> <th>İletişim</th> <th>Durum</th> <th>Ödeme</th> <th class="actions">İşlemler</th> </tr> </thead> <tbody> ${events.map(event => this.renderEventRow(event)).join('')} </tbody> </table> </div> `;
+                    this.attachEventsTabListeners();
+                },
+                renderEventRow(event) {
+                    const { units, settings } = this.data;
+                    const unit = units.find(u => u.id === event.unit_id) || { unit_name: 'Bilinmeyen' };
+                    const eventStatus = settings.event_statuses[event.status] || { display_name: 'Bilinmeyen' };
+                    const paymentStatus = settings.payment_statuses[event.payment_status] || { display_name: 'Bilinmeyen' };
+                    return ` <tr> <td>${event.id}</td> <td>${event.event_date}</td> <td>${unit.unit_name}</td> <td>${event.event_name}</td> <td>${event.event_time}</td> <td>${event.contact_info}</td> <td><span class="badge" style="background-color:${eventStatus.color}">${eventStatus.display_name}</span></td> <td><span class="badge" style="background-color:${paymentStatus.color}">${paymentStatus.display_name}</span></td> <td class="actions"> <button class="btn btn-sm btn-info edit-event-btn" data-id="${event.id}"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger delete-event-btn" data-id="${event.id}"><i class="fas fa-trash"></i></button> </td> </tr> `;
+                },
+                attachEventsTabListeners() { document.getElementById('add-event-btn').addEventListener('click', () => this.openEventModal()); document.querySelectorAll('.edit-event-btn').forEach(btn => btn.addEventListener('click', (e) => this.openEventModal(parseInt(e.currentTarget.dataset.id, 10)))); document.querySelectorAll('.delete-event-btn').forEach(btn => btn.addEventListener('click', (e) => this.deleteEvent(parseInt(e.currentTarget.dataset.id, 10)))); },
+
+                renderUnitsTab() {
+                    const content = document.getElementById('admin-content');
+                    content.innerHTML = ` <h5 class="card-title">Birim Yönetimi</h5> <button class="btn btn-primary mb-3" id="add-unit-btn"><i class="fas fa-plus me-1"></i>Yeni Birim Ekle</button> <div class="table-responsive"> <table class="table table-hover"> <thead> <tr> <th>ID</th> <th>Birim Adı</th> <th>Renk</th> <th>Aktif</th> <th class="actions">İşlemler</th> </tr> </thead> <tbody> ${this.data.units.map(unit => this.renderUnitRow(unit)).join('')} </tbody> </table> </div> `;
+                    this.attachUnitsTabListeners();
+                },
+                renderUnitRow(unit) { return ` <tr> <td>${unit.id}</td> <td>${unit.unit_name}</td> <td><input type="color" value="${unit.color}" disabled></td> <td>${unit.is_active ? '<span class="badge bg-success">Evet</span>' : '<span class="badge bg-danger">Hayır</span>'}</td> <td class="actions"> <button class="btn btn-sm btn-info edit-unit-btn" data-id="${unit.id}"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger delete-unit-btn" data-id="${unit.id}"><i class="fas fa-trash"></i></button> </td> </tr> `; },
+                attachUnitsTabListeners() { document.getElementById('add-unit-btn').addEventListener('click', () => this.openUnitModal()); document.querySelectorAll('.edit-unit-btn').forEach(btn => btn.addEventListener('click', (e) => this.openUnitModal(parseInt(e.currentTarget.dataset.id, 10)))); document.querySelectorAll('.delete-unit-btn').forEach(btn => btn.addEventListener('click', (e) => this.deleteUnit(parseInt(e.currentTarget.dataset.id, 10)))); },
+
+                renderHolidaysTab() {
+                    const content = document.getElementById('admin-content');
+                    content.innerHTML = ` <h5 class="card-title">Tatil Yönetimi</h5> <button class="btn btn-primary mb-3" id="add-holiday-btn"><i class="fas fa-plus me-1"></i>Yeni Tatil Ekle</button> <div class="table-responsive"> <table class="table table-hover"> <thead> <tr> <th>ID</th> <th>Tatil Adı</th> <th>Tarih</th> <th class="actions">İşlemler</th> </tr> </thead> <tbody> ${this.data.holidays.map(h => this.renderHolidayRow(h)).join('')} </tbody> </table> </div> `;
+                    this.attachHolidaysTabListeners();
+                },
+                renderHolidayRow(holiday) { return ` <tr> <td>${holiday.id}</td> <td>${holiday.holiday_name}</td> <td>${holiday.holiday_date}</td> <td class="actions"> <button class="btn btn-sm btn-info edit-holiday-btn" data-id="${holiday.id}"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger delete-holiday-btn" data-id="${holiday.id}"><i class="fas fa-trash"></i></button> </td> </tr> `; },
+                attachHolidaysTabListeners() { document.getElementById('add-holiday-btn').addEventListener('click', () => this.openHolidayModal()); document.querySelectorAll('.edit-holiday-btn').forEach(btn => btn.addEventListener('click', (e) => this.openHolidayModal(parseInt(e.currentTarget.dataset.id, 10)))); document.querySelectorAll('.delete-holiday-btn').forEach(btn => btn.addEventListener('click', (e) => this.deleteHoliday(parseInt(e.currentTarget.dataset.id, 10)))); },
+
+                renderAnnouncementsTab() {
+                    const content = document.getElementById('admin-content');
+                    content.innerHTML = ` <h5 class="card-title">Duyuru Yönetimi</h5> <button class="btn btn-primary mb-3" id="add-announcement-btn"><i class="fas fa-plus me-1"></i>Yeni Duyuru Ekle</button> <div class="table-responsive"> <table class="table table-hover"> <thead> <tr> <th>ID</th> <th>İçerik</th> <th>Yazar</th> <th>Tarih Aralığı</th> <th class="actions">İşlemler</th> </tr> </thead> <tbody> ${this.data.announcements.map(a => this.renderAnnouncementRow(a)).join('')} </tbody> </table> </div> `;
+                    this.attachAnnouncementsTabListeners();
+                },
+                renderAnnouncementRow(anno) { const author = this.data.users.find(u => u.id === anno.author_id) || {username: 'Bilinmeyen'}; return ` <tr> <td>${anno.id}</td> <td>${anno.content.substring(0, 50)}...</td> <td>${author.username}</td> <td>${anno.start_date} - ${anno.end_date}</td> <td class="actions"> <button class="btn btn-sm btn-info edit-announcement-btn" data-id="${anno.id}"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger delete-announcement-btn" data-id="${anno.id}"><i class="fas fa-trash"></i></button> </td> </tr> `; },
+                attachAnnouncementsTabListeners() { document.getElementById('add-announcement-btn').addEventListener('click', () => this.openAnnouncementModal()); document.querySelectorAll('.edit-announcement-btn').forEach(btn => btn.addEventListener('click', (e) => this.openAnnouncementModal(parseInt(e.currentTarget.dataset.id, 10)))); document.querySelectorAll('.delete-announcement-btn').forEach(btn => btn.addEventListener('click', (e) => this.deleteAnnouncement(parseInt(e.currentTarget.dataset.id, 10)))); },
+
+                renderUsersTab() {
+                    const content = document.getElementById('admin-content');
+                    content.innerHTML = ` <h5 class="card-title">Kullanıcı Yönetimi</h5> <button class="btn btn-primary mb-3" id="add-user-btn"><i class="fas fa-user-plus me-1"></i>Yeni Kullanıcı Ekle</button> <div class="table-responsive"> <table class="table table-hover"> <thead> <tr> <th>ID</th> <th>Kullanıcı Adı</th> <th>Tam Ad</th> <th>E-posta</th> <th>Aktif</th> <th>Oluşturulma</th> <th class="actions">İşlemler</th> </tr> </thead> <tbody> ${this.data.users.map(u => this.renderUserRow(u)).join('')} </tbody> </table> </div> `;
+                    this.attachUsersTabListeners();
+                },
+                renderUserRow(user) { return ` <tr> <td>${user.id}</td> <td>${user.username}</td> <td>${user.full_name}</td> <td>${user.email}</td> <td>${user.is_active ? '<span class="badge bg-success">Evet</span>' : '<span class="badge bg-danger">Hayır</span>'}</td> <td>${new Date(user.created_at).toLocaleDateString()}</td> <td class="actions"> <button class="btn btn-sm btn-info edit-user-btn" data-id="${user.id}"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger delete-user-btn" data-id="${user.id}"><i class="fas fa-trash"></i></button> </td> </tr> `; },
+                attachUsersTabListeners() { document.getElementById('add-user-btn').addEventListener('click', () => this.openAdminUserModal()); document.querySelectorAll('.edit-user-btn').forEach(btn => btn.addEventListener('click', (e) => this.openAdminUserModal(parseInt(e.currentTarget.dataset.id, 10)))); document.querySelectorAll('.delete-user-btn').forEach(btn => btn.addEventListener('click', (e) => this.deleteUser(parseInt(e.currentTarget.dataset.id, 10)))); },
+
+               renderReportsTab() {
+                    const content = document.getElementById('admin-content');
+                    const { units } = this.data;
+
+                    content.innerHTML = `
+                        <h5 class="card-title">Raporlama</h5>
+                        <div class="report-filters">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="report-start-date" class="form-label">Başlangıç Tarihi</label>
+                                    <input type="date" class="form-control" id="report-start-date">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="report-end-date" class="form-label">Bitiş Tarihi</label>
+                                    <input type="date" class="form-control" id="report-end-date">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Birimler</label>
+                                    <div class="unit-checkboxes">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="check-all-units" checked>
+                                            <label class="form-check-label" for="check-all-units">Tümünü Seç</label>
+                                        </div>
+                                        <hr>
+                                        ${units.map(unit => `
+                                            <div class="form-check">
+                                                <input class="form-check-input unit-check" type="checkbox" value="${unit.id}" id="unit-${unit.id}" checked>
+                                                <label class="form-check-label" for="unit-${unit.id}">${unit.unit_name}</label>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="export-buttons text-center">
+                            <h5 class="mb-3">Raporu Dışa Aktar</h5>
+                            <button class="btn btn-secondary" id="export-txt"><i class="fas fa-file-alt me-1"></i> TXT olarak indir</button>
+                            <button class="btn btn-primary" id="export-doc"><i class="fas fa-file-word me-1"></i> DOC olarak indir</button>
+                            <button class="btn btn-success" id="export-xls"><i class="fas fa-file-excel me-1"></i> XLS olarak indir</button>
+                        </div>
+
+                        <div id="report-results"></div>
+                    `;
+
+                },
+
+                attachReportsTabListeners() {
+                    document.getElementById('check-all-units').addEventListener('change', (e) => {
+                        document.querySelectorAll('.unit-check').forEach(checkbox => {
+                            checkbox.checked = e.target.checked;
+                        });
+                    });
+
+                    document.getElementById('export-txt').addEventListener('click', () => this.generateReport('txt'));
+                    document.getElementById('export-doc').addEventListener('click', () => this.generateReport('doc'));
+                    document.getElementById('export-xls').addEventListener('click', () => this.generateReport('xls'));
+                },
+
+                generateReport(format) {
+                    const startDate = document.getElementById('report-start-date').value;
+                    const endDate = document.getElementById('report-end-date').value;
+                    const selectedUnitIds = Array.from(document.querySelectorAll('.unit-check:checked')).map(cb => parseInt(cb.value, 10));
+
+                    if (!startDate || !endDate) {
+                        alert('Lütfen başlangıç ve bitiş tarihlerini seçin.');
+                        return;
+                    }
+
+                    const filteredEvents = this.data.events.filter(event => {
+                        return (
+                            event.event_date >= startDate &&
+                            event.event_date <= endDate &&
+                            selectedUnitIds.includes(event.unit_id)
+                        );
+                    }).sort((a,b) => new Date(a.event_date) - new Date(b.event_date));
+
+                    if (filteredEvents.length === 0) {
+                        alert('Seçilen kriterlere uygun etkinlik bulunamadı.');
+                        return;
+                    }
+
+                    let content = '';
+                    let mimeType = '';
+                    let filename = `report-${new Date().toISOString().split('T')[0]}.${format}`;
+
+                    if (format === 'txt') {
+                        mimeType = 'text/plain';
+                        content = this.generateTxtReport(filteredEvents, startDate, endDate);
+                    } else if (format === 'doc') {
+                        mimeType = 'application/msword';
+                        content = this.generateHtmlReport(filteredEvents, startDate, endDate, 'Word Belgesi');
+                        filename = `report.doc`;
+                    } else if (format === 'xls') {
+                        mimeType = 'application/vnd.ms-excel';
+                        content = this.generateHtmlReport(filteredEvents, startDate, endDate, 'Excel Tablosu');
+                        filename = `report.xls`;
+                    }
+
+                    const blob = new Blob([content], { type: `${mimeType};charset=utf-8` });
+                    const link = document.createElement("a");
+                    if (link.download !== undefined) {
+                        const url = URL.createObjectURL(blob);
+                        link.setAttribute("href", url);
+                        link.setAttribute("download", filename);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                },
+
+                generateTxtReport(events, startDate, endDate) {
+                    let txt = `ETKINLIK RAPORU\n`;
+                    txt += `Tarih Aralığı: ${startDate} - ${endDate}\n`;
+                    txt += `Toplam Etkinlik: ${events.length}\n`;
+                    txt += `--------------------------------------------------\n\n`;
+
+                    events.forEach(event => {
+                        const unit = this.data.units.find(u => u.id === event.unit_id) || { unit_name: 'Bilinmeyen' };
+                        txt += `Tarih: ${event.event_date} ${event.event_time}\n`;
+                        txt += `Birim: ${unit.unit_name}\n`;
+                        txt += `Etkinlik: ${event.event_name}\n`;
+                        txt += `İletişim: ${event.contact_info || '-'}\n`;
+                        txt += `Notlar: ${event.notes || '-'}\n`;
+                        txt += `--------------------------------\n`;
+                    });
+                    return txt;
+                },
+
+                generateHtmlReport(events, startDate, endDate, title) {
+                    let html = `
+                        <html xmlns:o="urn:schemas-microsoft-com:office:office"
+                              xmlns:x="urn:schemas-microsoft-com:office:excel"
+                              xmlns="http://www.w3.org/TR/REC-html40">
+                        <head>
+                            <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+                            <!--[if gte mso 9]>
+                            <xml>
+                                <x:ExcelWorkbook>
+                                    <x:ExcelWorksheets>
+                                        <x:ExcelWorksheet>
+                                            <x:Name>Rapor</x:Name>
+                                            <x:WorksheetOptions>
+                                                <x:DisplayGridlines/>
+                                            </x:WorksheetOptions>
+                                        </x:ExcelWorksheet>
+                                    </x:ExcelWorksheets>
+                                </x:ExcelWorkbook>
+                            </xml>
+                            <![endif]-->
+                        </head>
+                        <body>
+                            <h1>${title}</h1>
+                            <p>Tarih Aralığı: ${startDate} - ${endDate}</p>
+                            <p>Toplam Etkinlik: ${events.length}</p>
+                            <table border="1">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Saat</th>
+                                        <th>Birim</th>
+                                        <th>Etkinlik Adı</th>
+                                        <th>İletişim</th>
+                                        <th>Durum</th>
+                                        <th>Ödeme Durumu</th>
+                                        <th>Notlar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${events.map(event => {
+                                        const unit = this.data.units.find(u => u.id === event.unit_id) || { unit_name: 'Bilinmeyen' };
+                                        const eventStatus = this.data.settings.event_statuses[event.status] || { display_name: 'Bilinmeyen' };
+                                        const paymentStatus = this.data.settings.payment_statuses[event.payment_status] || { display_name: 'Bilinmeyen' };
+                                        return `
+                                            <tr>
+                                                <td>${event.event_date}</td>
+                                                <td>${event.event_time}</td>
+                                                <td>${unit.unit_name}</td>
+                                                <td>${event.event_name}</td>
+                                                <td>${event.contact_info || ''}</td>
+                                                <td>${eventStatus.display_name}</td>
+                                                <td>${paymentStatus.display_name}</td>
+                                                <td>${event.notes || ''}</td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </body>
+                        </html>
+                    `;
+                    return html;
+                },
+
+                renderSettingsTab() {
+                    const content = document.getElementById('admin-content');
+                    content.innerHTML = ` <h5 class="card-title">Genel Ayarlar</h5> <p>Buradan etkinlik durumları ve ödeme durumları için görüntülenen adları ve renkleri düzenleyebilirsiniz.</p> <form id="settings-form"> <button type="submit" class="btn btn-primary">Ayarları Kaydet</button> </form> <hr> <h5 class="card-title mt-4">Veri Yönetimi</h5> <p>Uygulama verilerini yedekleyebilir veya bir yedekten geri yükleyebilirsiniz.</p> <div class="d-flex gap-2"> <button class="btn btn-success" id="backup-btn"><i class="fas fa-download me-1"></i>Verileri Yedekle (.json)</button> <label class="btn btn-warning"> <i class="fas fa-upload me-1"></i> Verileri Geri Yükle (.json) <input type="file" id="restore-input" accept=".json" class="d-none"> </label> </div> `;
+                    document.getElementById('backup-btn').addEventListener('click', () => this.backupData());
+                    document.getElementById('restore-input').addEventListener('change', (e) => this.restoreData(e));
+                },
+                backupData() { const dataStr = JSON.stringify(this.data, null, 2); const blob = new Blob([dataStr], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `event-calendar-backup-${new Date().toISOString().split('T')[0]}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); },
+                restoreData(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { try { const restoredData = JSON.parse(e.target.result); if (confirm('Mevcut tüm verileriniz bu yedekle değiştirilecek. Emin misiniz?')) { this.data = restoredData; this.saveData(); this.render(); alert('Veriler başarıyla geri yüklendi.'); } } catch (error) { alert('Geçersiz JSON dosyası.'); } }; reader.readAsText(file); } },
+                login(username, password) { const user = this.data.users.find(u => u.username === username && u.password === password && u.is_active); if (user) { this.data.currentUser = user; this.saveData(); this.render(); return true; } return false; },
+                logout() { this.data.currentUser = null; this.data.currentView = 'home'; this.saveData(); this.render(); },
+
+                // Modal Handling
+                initModals() {
+                    this.eventModal = new bootstrap.Modal(document.getElementById('eventModal'));
+                    document.getElementById('event-form').addEventListener('submit', (e) => { e.preventDefault(); this.handleEventFormSubmit(); });
+
+                    this.unitModal = new bootstrap.Modal(document.getElementById('unitModal'));
+                    document.getElementById('unit-form').addEventListener('submit', (e) => { e.preventDefault(); this.handleUnitFormSubmit(); });
+
+                    this.holidayModal = new bootstrap.Modal(document.getElementById('holidayModal'));
+                    document.getElementById('holiday-form').addEventListener('submit', (e) => { e.preventDefault(); this.handleHolidayFormSubmit(); });
+
+                    this.announcementModal = new bootstrap.Modal(document.getElementById('announcementModal'));
+                    document.getElementById('announcement-form').addEventListener('submit', (e) => { e.preventDefault(); this.handleAnnouncementFormSubmit(); });
+
+                    this.adminUserModal = new bootstrap.Modal(document.getElementById('adminUserModal'));
+                    document.getElementById('user-form').addEventListener('submit', (e) => { e.preventDefault(); this.handleAdminUserFormSubmit(); });
+                },
+                openEventModal(eventId = null) {
+                    const form = document.getElementById('event-form'); form.reset();
+                    document.getElementById('event-unit').innerHTML = this.data.units.filter(u=>u.is_active).map(u => `<option value="${u.id}">${u.unit_name}</option>`).join('');
+                    document.getElementById('event-status').innerHTML = Object.entries(this.data.settings.event_statuses).map(([key, value]) => `<option value="${key}">${value.display_name}</option>`).join('');
+                    document.getElementById('event-payment-status').innerHTML = Object.entries(this.data.settings.payment_statuses).map(([key, value]) => `<option value="${key}">${value.display_name}</option>`).join('');
+                    if (eventId) { const event = this.data.events.find(e => e.id === eventId); if (event) { document.getElementById('event-id').value = event.id; document.getElementById('event-date').value = event.event_date; document.getElementById('event-time').value = event.event_time; document.getElementById('event-name').value = event.event_name; document.getElementById('event-unit').value = event.unit_id; document.getElementById('event-status').value = event.status; document.getElementById('event-payment-status').value = event.payment_status; document.getElementById('event-contact').value = event.contact_info; document.getElementById('event-notes').value = event.notes; } } else { document.getElementById('event-id').value = ''; }
+                    this.eventModal.show();
+                },
+                handleEventFormSubmit() { const eventData = { id: document.getElementById('event-id').value ? parseInt(document.getElementById('event-id').value, 10) : null, event_date: document.getElementById('event-date').value, event_time: document.getElementById('event-time').value, event_name: document.getElementById('event-name').value, unit_id: parseInt(document.getElementById('event-unit').value, 10), status: document.getElementById('event-status').value, payment_status: document.getElementById('event-payment-status').value, contact_info: document.getElementById('event-contact').value, notes: document.getElementById('event-notes').value, }; if (eventData.id) { this.updateEvent(eventData); } else { this.addEvent(eventData); } this.eventModal.hide(); },
+
+                openUnitModal(unitId = null) { const form = document.getElementById('unit-form'); form.reset(); if (unitId) { const unit = this.data.units.find(u => u.id === unitId); if (unit) { document.getElementById('unit-id').value = unit.id; document.getElementById('unit-name').value = unit.unit_name; document.getElementById('unit-color').value = unit.color; document.getElementById('unit-is-active').checked = unit.is_active; } } else { document.getElementById('unit-id').value = ''; } this.unitModal.show(); },
+                handleUnitFormSubmit() { const unitData = { id: document.getElementById('unit-id').value ? parseInt(document.getElementById('unit-id').value, 10) : null, unit_name: document.getElementById('unit-name').value, color: document.getElementById('unit-color').value, is_active: document.getElementById('unit-is-active').checked }; if(unitData.id) { this.updateUnit(unitData); } else { this.addUnit(unitData); } this.unitModal.hide(); },
+
+                openHolidayModal(holidayId = null) { const form = document.getElementById('holiday-form'); form.reset(); if (holidayId) { const holiday = this.data.holidays.find(h => h.id === holidayId); if (holiday) { document.getElementById('holiday-id').value = holiday.id; document.getElementById('holiday-name').value = holiday.holiday_name; document.getElementById('holiday-date').value = holiday.holiday_date; } } else { document.getElementById('holiday-id').value = ''; } this.holidayModal.show(); },
+                handleHolidayFormSubmit() { const holidayData = { id: document.getElementById('holiday-id').value ? parseInt(document.getElementById('holiday-id').value, 10) : null, holiday_name: document.getElementById('holiday-name').value, holiday_date: document.getElementById('holiday-date').value }; if (holidayData.id) { this.updateHoliday(holidayData); } else { this.addHoliday(holidayData); } this.holidayModal.hide(); },
+
+                openAnnouncementModal(annoId = null) { const form = document.getElementById('announcement-form'); form.reset(); if (annoId) { const anno = this.data.announcements.find(a => a.id === annoId); if (anno) { document.getElementById('announcement-id').value = anno.id; document.getElementById('announcement-content').value = anno.content; document.getElementById('announcement-start').value = anno.start_date; document.getElementById('announcement-end').value = anno.end_date; } } else { document.getElementById('announcement-id').value = ''; } this.announcementModal.show(); },
+                handleAnnouncementFormSubmit() { const annoData = { id: document.getElementById('announcement-id').value ? parseInt(document.getElementById('announcement-id').value, 10) : null, content: document.getElementById('announcement-content').value, start_date: document.getElementById('announcement-start').value, end_date: document.getElementById('announcement-end').value }; if (annoData.id) { this.updateAnnouncement(annoData); } else { this.addAnnouncement(annoData); } this.announcementModal.hide(); },
+
+                openAdminUserModal(userId = null) { const form = document.getElementById('user-form'); form.reset(); if (userId) { const user = this.data.users.find(u => u.id === userId); if (user) { document.getElementById('user-id').value = user.id; document.getElementById('user-username').value = user.username; document.getElementById('user-fullname').value = user.full_name; document.getElementById('user-email').value = user.email; document.getElementById('user-is-active').checked = user.is_active; } } else { document.getElementById('user-id').value = ''; } this.adminUserModal.show(); },
+                handleAdminUserFormSubmit() { const userId = document.getElementById('user-id').value ? parseInt(document.getElementById('user-id').value, 10) : null; const password = document.getElementById('user-password').value; const userData = { id: userId, username: document.getElementById('user-username').value, full_name: document.getElementById('user-fullname').value, email: document.getElementById('user-email').value, is_active: document.getElementById('user-is-active').checked }; if (password) { userData.password = password; } if (userId) { this.updateUser(userData); } else { if (!password) { alert('Yeni kullanıcı için şifre zorunludur.'); return; } this.addUser(userData); } this.adminUserModal.hide(); }
+
+            };
+
+            App.init();
+
+            // Global Event Listeners
+            document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); const username = document.getElementById('login_username').value; const password = document.getElementById('login_password').value; const loginError = document.getElementById('login-error'); if (App.login(username, password)) { bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide(); loginError.style.display = 'none'; } else { loginError.textContent = 'Geçersiz kullanıcı adı veya şifre!'; loginError.style.display = 'block'; } });
+            document.getElementById('logout-button').addEventListener('click', () => App.logout());
+            document.getElementById('home-link').addEventListener('click', (e) => { e.preventDefault(); App.data.currentView = 'home'; App.data.searchTerm = ''; App.render(); });
+            document.getElementById('admin-link').addEventListener('click', (e) => { e.preventDefault(); App.data.currentView = 'admin'; App.render(); });
+        });
+    </script>
+</body>
+</html>
