@@ -1,0 +1,110 @@
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --accent-color: #3498db;
+    --bg-light: #ecf0f1;
+}
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg-light);
+}
+
+/* Genel Mobil Uyumluluk */
+.container {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.navbar {
+    background-color: var(--primary-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+/* Takvim Görünümü (Mobile First: Tek Sütun) */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Mobil: Tek sütun */
+    gap: 15px; /* Mobil: Daha büyük boşluk */
+}
+
+/* Tablet ve Masaüstü Görünümü (992px üstü) */
+@media (min-width: 992px) {
+    .calendar-grid {
+        grid-template-columns: repeat(7, 1fr); /* Masaüstü: 7 sütun */
+        gap: 8px; /* Masaüstü: Daha küçük boşluk */
+    }
+    .day-card {
+        min-height: 150px;
+    }
+    .admin-nav-tabs .nav-link {
+        /* Yatay düzen için */
+        border-bottom: 2px solid transparent !important;
+    }
+}
+
+/* Gün Kartları ve Etkinlikler (Dokunmatik Kullanım İçin Büyütme) */
+.day-card {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    transition: transform 0.2s;
+    min-height: 100px; /* Mobil min yükseklik */
+}
+.day-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.day-header {
+    background: #f8f9fa;
+    padding: 10px 15px; /* Mobil: Daha büyük padding */
+    font-weight: bold;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.day-card.weekend .day-header { background-color: #ffeaa7; color: #d35400; }
+.day-card.holiday .day-header { background-color: #fcebeb; color: #e74c3c; }
+
+.event-item {
+    font-size: 0.9rem; /* Mobil: Daha okunaklı font */
+    padding: 10px; /* Mobil: Büyük dokunmatik hedef */
+    margin-bottom: 8px;
+    border-radius: 6px;
+    border-left: 5px solid #3498db; /* Kalın border */
+    background: #fdfdfd;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.event-item:hover { background: #eee; }
+
+/* Yönetim Paneli Navigasyonu (Mobil) */
+.admin-nav-tabs .list-group-item {
+    border-radius: 4px;
+    margin-bottom: 5px;
+    border: 1px solid #ddd;
+}
+
+.admin-nav-tabs .list-group-item.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Form Elementleri (Dokunmatik uyum) */
+.form-control, .form-select, .btn {
+    padding: 10px 15px;
+    font-size: 1rem;
+    border-radius: 6px;
+}
+
+
+.badge-status { font-size: 0.7rem; }
+.report-table th { background-color: var(--primary-color) !important; color: white !important; }
+.report-summary { background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;}

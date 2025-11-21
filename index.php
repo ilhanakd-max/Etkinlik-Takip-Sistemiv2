@@ -57,23 +57,8 @@ try {
 // Sisteme giriş yapılmadan hemen önce lisans durumu denetlenir.
 enforce_license($pdo, $appConfig);
 
-// Yardımcı Fonksiyonlar
-function clean_input($data) {
-    $sanitized = trim(strip_tags((string) $data));
-    return preg_replace('/[\x00-\x1F\x7F]/u', '', $sanitized);
-}
-
-function is_admin() { return isset($_SESSION['admin']) && $_SESSION['admin'] === true; }
-function is_super_admin() {
-    // Hem eski `super_admin` anahtarını hem de yeni rol tabanlı sistemi destekler
-    if (isset($_SESSION['super_admin']) && $_SESSION['super_admin'] === true) {
-        return true;
-    }
-    return isset($_SESSION['admin_user']['role']) && $_SESSION['admin_user']['role'] === 'super_admin';
-}
-function generateCSRFToken() { if (!isset($_SESSION['csrf_token'])) $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); return $_SESSION['csrf_token']; }
-function validateCSRFToken($token) { return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token); }
-function is_valid_date_string($date) { if (!is_string($date) || $date === '') return false; $dt = DateTime::createFromFormat('Y-m-d', $date); return $dt && $dt->format('Y-m-d') === $date; }
+// --- YARDIMCI FONKSİYONLAR VE BAŞLANGIÇ ---
+require_once __DIR__ . '/core/functions.php';
 
 // Dinamik Durum ve Ödeme Bilgilerini Çek
 global $all_event_statuses, $all_payment_statuses;
@@ -96,10 +81,12 @@ try {
 // Global Ayarları Çek
 $settings = [];
 try {
-    foreach ($pdo->query("SELECT * FROM app_settings") as $row) {
+    $stmt = $pdo->query("SELECT setting_key, setting_value FROM app_settings");
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $settings[$row['setting_key']] = $row['setting_value'];
     }
 } catch (PDOException $e) {
+    // app_settings tablosu yoksa veya hata verirse, varsayılan ayarları kullan
     $settings['active_sector'] = 'generic';
 }
 $active_sector = $settings['active_sector'] ?? 'generic';
@@ -135,28 +122,6 @@ try {
 // Geçerli dil etiketlerini al
 $lang = $sector_configs[$active_sector] ?? $sector_configs['generic'];
 
-// Türkçe Tarih Fonksiyonları
-$turkish_months = [1=>'Ocak', 2=>'Şubat', 3=>'Mart', 4=>'Nisan', 5=>'Mayıs', 6=>'Haziran', 7=>'Temmuz', 8=>'Ağustos', 9=>'Eylül', 10=>'Ekim', 11=>'Kasım', 12=>'Aralık'];
-$turkish_days_full = ['Monday'=>'Pazartesi', 'Tuesday'=>'Salı', 'Wednesday'=>'Çarşamba', 'Thursday'=>'Perşembe', 'Friday'=>'Cuma', 'Saturday'=>'Cumartesi', 'Sunday'=>'Pazar'];
-
-function turkish_date($format, $timestamp = null) {
-    global $turkish_months, $turkish_days_full;
-    $timestamp = $timestamp ?? time();
-    $date = date($format, $timestamp);
-    $month_num = date('n', $timestamp);
-    $day_en = date('l', $timestamp);
-    
-    // Ay isimlerini çevir
-    $date = str_replace(date('F', $timestamp), $turkish_months[$month_num], $date);
-    $date = str_replace(date('M', $timestamp), mb_substr($turkish_months[$month_num], 0, 3, 'UTF-8'), $date);
-    
-    // Gün isimlerini çevir
-    if (isset($turkish_days_full[$day_en])) {
-        $date = str_replace($day_en, $turkish_days_full[$day_en], $date);
-    }
-    
-    return $date;
-}
 
 /**
  * Otomatik Yinelenen (Ulusal) Sabit Tatilleri Hesaplar
@@ -701,154 +666,55 @@ try {
 $selected_unit = filter_input(INPUT_GET, 'unit_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?? null;
 if (!$selected_unit && count($units) > 0) $selected_unit = $units[0]['id'];
 
+// --- SAYFA YÖNLENDİRME VE GÖRÜNÜM ---
+$page_title = $lang['title'];
+
+ob_start();
+
+// Dinamik Badge Stilleri için CSS oluştur
+$dynamic_styles = '';
+if (isset($all_event_statuses)) {
+    foreach ($all_event_statuses as $key => $status) {
+        $dynamic_styles .= ".badge-status-$key { " . generateBadgeStyle($status) . " }\n";
+    }
+}
+if (isset($all_payment_statuses)) {
+    foreach ($all_payment_statuses as $key => $status) {
+        $dynamic_styles .= ".badge-payment-$key { " . generateBadgeStyle($status) . " }\n";
+    }
+}
+
+// Header'ı dahil et
+include 'templates/partials/header.php';
+
 ?>
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($lang['title']); ?> - Rezervasyon Paneli</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #34495e;
-            --accent-color: #3498db;
-            --bg-light: #ecf0f1;
-        }
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background-color: var(--bg-light); 
-        }
-        
-        /* Genel Mobil Uyumluluk */
-        .container {
-            padding-left: 10px;
-            padding-right: 10px;
-        }
+<body data-is-admin="<?php echo is_admin() ? '1' : '0'; ?>"
+      data-current-unit-id="<?php echo htmlspecialchars($selected_unit ?? ''); ?>"
+      data-csrf-token="<?php echo generateCSRFToken(); ?>">
 
-        .navbar { 
-            background-color: var(--primary-color); 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-        }
-        .card { 
-            border: none; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
-            margin-bottom: 20px; 
-        }
-        
-        /* Takvim Görünümü (Mobile First: Tek Sütun) */
-        .calendar-grid { 
-            display: grid; 
-            grid-template-columns: 1fr; /* Mobil: Tek sütun */
-            gap: 15px; /* Mobil: Daha büyük boşluk */
-        }
-        
-        /* Tablet ve Masaüstü Görünümü (992px üstü) */
-        @media (min-width: 992px) { 
-            .calendar-grid { 
-                grid-template-columns: repeat(7, 1fr); /* Masaüstü: 7 sütun */
-                gap: 8px; /* Masaüstü: Daha küçük boşluk */
-            }
-            .day-card {
-                min-height: 150px;
-            }
-            .admin-nav-tabs .nav-link {
-                /* Yatay düzen için */
-                border-bottom: 2px solid transparent !important;
-            }
-        }
-        
-        /* Gün Kartları ve Etkinlikler (Dokunmatik Kullanım İçin Büyütme) */
-        .day-card { 
-            background: white; 
-            border-radius: 8px; 
-            border: 1px solid #dee2e6; 
-            transition: transform 0.2s; 
-            min-height: 100px; /* Mobil min yükseklik */
-        }
-        .day-card:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
-        }
-        .day-header { 
-            background: #f8f9fa; 
-            padding: 10px 15px; /* Mobil: Daha büyük padding */
-            font-weight: bold; 
-            border-radius: 8px 8px 0 0; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-        
-        .day-card.weekend .day-header { background-color: #ffeaa7; color: #d35400; }
-        .day-card.holiday .day-header { background-color: #fcebeb; color: #e74c3c; } 
+<?php include 'templates/partials/navbar.php'; ?>
 
-        .event-item { 
-            font-size: 0.9rem; /* Mobil: Daha okunaklı font */
-            padding: 10px; /* Mobil: Büyük dokunmatik hedef */
-            margin-bottom: 8px; 
-            border-radius: 6px; 
-            border-left: 5px solid #3498db; /* Kalın border */
-            background: #fdfdfd; 
-            cursor: pointer; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .event-item:hover { background: #eee; }
-        
-        /* Yönetim Paneli Navigasyonu (Mobil) */
-        .admin-nav-tabs .list-group-item {
-            border-radius: 4px;
-            margin-bottom: 5px;
-            border: 1px solid #ddd;
-        }
+<div class="container">
+    <?php include 'templates/partials/messages.php'; ?>
 
-        .admin-nav-tabs .list-group-item.active {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        
-        /* Form Elementleri (Dokunmatik uyum) */
-        .form-control, .form-select, .btn {
-            padding: 10px 15px;
-            font-size: 1rem;
-            border-radius: 6px;
-        }
+    <?php
+    // Sayfa içeriğini yükle
+    $page_path = "templates/pages/{$page}.php";
+    if (file_exists($page_path)) {
+        include $page_path;
+    } else {
+        include 'templates/pages/index.php'; // Varsayılan sayfa
+    }
+    ?>
+</div>
 
+<?php
+// Modalları ve Footer'ı dahil et
+include 'templates/partials/modals.php';
+include 'templates/partials/footer.php';
 
-        .badge-status { font-size: 0.7rem; }
-        .report-table th { background-color: var(--primary-color) !important; color: white !important; }
-        .report-summary { background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;}
-
-        <?php
-        // Dinamik Badge Stilleri
-        function generateBadgeStyle($status) {
-            $style = "background-color: " . htmlspecialchars($status['color']) . " !important; color: white !important; font-weight: 500;";
-            $hex = ltrim($status['color'], '#');
-            if (strlen($hex) == 6) {
-                $r = hexdec(substr($hex, 0, 2));
-                $g = hexdec(substr($hex, 2, 2));
-                $b = hexdec(substr($hex, 4, 2));
-                $luminance = (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255;
-                if ($luminance > 0.65) $style .= " color: #212529 !important; text-shadow: none;";
-            }
-            return $style;
-        }
-
-        foreach ($all_event_statuses as $key => $status) {
-            echo ".badge-status-$key { " . generateBadgeStyle($status) . " }\n";
-        }
-        foreach ($all_payment_statuses as $key => $status) {
-            echo ".badge-payment-$key { " . generateBadgeStyle($status) . " }\n";
-        }
-        ?>
-    </style>
-</head>
-<body>
-
-<nav class="navbar navbar-expand-lg navbar-dark mb-4">
+ob_end_flush();
+?>
     <div class="container">
         <a class="navbar-brand" href="?page=index">
             <i class="fas <?php echo $lang['icon']; ?> me-2"></i><?php echo htmlspecialchars($lang['title']); ?>

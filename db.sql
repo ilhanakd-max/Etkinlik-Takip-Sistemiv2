@@ -25,20 +25,20 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Tablo için tablo yapısı `active_sector`
+-- Tablo için tablo yapısı `app_settings`
 --
 
-CREATE TABLE `active_sector` (
-  `id` int(11) NOT NULL,
-  `active_sector_key` varchar(50) NOT NULL
+CREATE TABLE `app_settings` (
+  `setting_key` varchar(100) NOT NULL,
+  `setting_value` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci;
 
 --
--- Tablo döküm verisi `active_sector`
+-- Tablo döküm verisi `app_settings`
 --
 
-INSERT INTO `active_sector` (`id`, `active_sector_key`) VALUES
-(1, 'generic');
+INSERT INTO `app_settings` (`setting_key`, `setting_value`) VALUES
+('active_sector', 'generic');
 
 -- --------------------------------------------------------
 
@@ -101,13 +101,12 @@ INSERT INTO `app_sectors` (`sector_key`, `sector_name`, `unit_label`, `event_lab
 CREATE TABLE `events` (
   `id` int(11) NOT NULL,
   `unit_id` int(11) NOT NULL,
-  `sector_key` varchar(50) NOT NULL,
   `event_date` date NOT NULL,
   `event_name` varchar(255) NOT NULL,
   `event_time` varchar(100) NOT NULL,
   `contact_info` varchar(255) DEFAULT NULL,
   `notes` text DEFAULT NULL,
-  `status` varchar(50) NOT NULL DEFAULT 'option',
+  `status` varchar(50) NOT NULL DEFAULT 'pending',
   `payment_status` varchar(50) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -131,10 +130,10 @@ CREATE TABLE `event_statuses` (
 --
 
 INSERT INTO `event_statuses` (`id`, `status_key`, `display_name`, `color`) VALUES
-(1, 'confirmed', 'Onaylı', '#2d6a4f'),
-(2, 'option', 'Opsiyonlu', '#0ea5e9'),
-(3, 'cancelled', 'İptal', '#ef4444'),
-(4, 'free', 'Ücretsiz', '#10b981');
+(1, 'confirmed', 'Onaylı', '#2ecc71'),
+(2, 'pending', 'Beklemede', '#f1c40f'),
+(3, 'cancelled', 'İptal', '#e74c3c'),
+(4, 'completed', 'Tamamlandı', '#34495e');
 
 -- --------------------------------------------------------
 
@@ -185,9 +184,9 @@ CREATE TABLE `payment_statuses` (
 --
 
 INSERT INTO `payment_statuses` (`id`, `status_key`, `display_name`, `color`) VALUES
-(1, 'paid', 'Ödendi', '#16a34a'),
-(2, 'not_paid', 'Ödenmedi', '#ef4444'),
-(3, 'to_be_paid', 'Ödeme Bekleniyor', '#f97316');
+(1, 'paid', 'Ödendi', '#27ae60'),
+(2, 'unpaid', 'Ödenmedi', '#c0392b'),
+(3, 'partial', 'Kaporası Alındı', '#e67e22');
 
 -- --------------------------------------------------------
 
@@ -214,10 +213,10 @@ INSERT INTO `units` (`id`, `unit_name`, `color`, `is_active`) VALUES
 --
 
 --
--- Tablo için indeksler `active_sector`
+-- Tablo için indeksler `app_settings`
 --
-ALTER TABLE `active_sector`
-  ADD PRIMARY KEY (`id`);
+ALTER TABLE `app_settings`
+  ADD PRIMARY KEY (`setting_key`);
 
 --
 -- Tablo için indeksler `admin_users`
@@ -237,8 +236,7 @@ ALTER TABLE `app_sectors`
 --
 ALTER TABLE `events`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_event_unit` (`unit_id`),
-  ADD KEY `idx_event_sector` (`sector_key`);
+  ADD KEY `idx_event_unit` (`unit_id`);
 
 --
 -- Tablo için indeksler `event_statuses`
@@ -276,12 +274,6 @@ ALTER TABLE `units`
 --
 -- Dökümü yapılmış tablolar için AUTO_INCREMENT değeri
 --
-
---
--- Tablo için AUTO_INCREMENT değeri `active_sector`
---
-ALTER TABLE `active_sector`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `admin_users`
@@ -327,7 +319,6 @@ ALTER TABLE `units`
 -- Tablo kısıtlamaları `events`
 --
 ALTER TABLE `events`
-  ADD CONSTRAINT `fk_events_sector` FOREIGN KEY (`sector_key`) REFERENCES `app_sectors` (`sector_key`) ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_events_units` FOREIGN KEY (`unit_id`) REFERENCES `units` (`id`) ON UPDATE CASCADE;
 COMMIT;
 
